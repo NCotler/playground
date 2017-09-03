@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+<body>
+  <canvas id="myCanvas" width="600" height="600" style="border:1px solid #000000;"></canvas>
+  <script>
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    
+    var allCircles = [];
+    
+    var mouse = {
+      x: undefined,
+      y: undefined
+    }
+    
+    function CircleRipple(x,y)
+    {
+      this.x = x;
+      this.y = y;
+      this.r = 0;
+      this.color = 0;
+      
+      this.draw = function () 
+      {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+          ctx.strokeStyle = "rgb(0,0,"+this.color+")";
+          ctx.stroke();
+      }
+      
+      this.update = function() {
+        this.r += 1;
+
+        this.draw();
+      }
+      
+    }
+    
+    window.addEventListener("click", function(event){
+      mouse.x = event.x;
+      mouse.y = event.y;      
+      allCircles.push(new CircleRipple(event.x, event.y));
+    });
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0,0,1000,1000);
+      
+          for(var i = 0; i < allCircles.length; i++)
+          {
+            allCircles[i].update();
+          }
+      console.log(allCircles.length);
+    }
+    
+    animate();
+    
+  </script>
+</body>
+</html>
