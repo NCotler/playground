@@ -13,24 +13,22 @@
     
     var allCircles = [];
     
-    var mouse = {
-      x: undefined,
-      y: undefined
-    }
-    
-    function CircleRipple(x,y)
+    function CircleRipple(x,y,r,color)
     {
       this.x = x;
       this.y = y;
-      this.r = 0;
-      this.color = 0;
+      this.r = r;
+      this.color = color;
       
       this.draw = function () 
       {
+        if(this.r >= 0)
+        {
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
-          ctx.strokeStyle = "rgb(0,0,"+this.color+")";
+          ctx.strokeStyle = "rgba(" + (this.color*32)%255 + "," + (this.color*64)%255 + "," + (this.color*128)%255 + ",0.5)";
           ctx.stroke();
+        }
       }
       
       this.update = function() {
@@ -41,11 +39,12 @@
       
     }
     
-    window.addEventListener("click", function(event){
-      mouse.x = event.x;
-      mouse.y = event.y;      
-      allCircles.push(new CircleRipple(event.x, event.y));
+    window.addEventListener("click", function(event){  
+      for(var i = 0; i < 64; i++) 
+      allCircles.push(new CircleRipple(event.x, event.y, -i*10, i));;
     });
+
+    //var frameCount = 0;
     
     function animate() {
       requestAnimationFrame(animate);
