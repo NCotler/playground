@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>JS Bin</title>
+    <title>GridMove</title>
 </head>
 
 <body>
@@ -16,20 +16,63 @@
 
     var width = c.width;
     var height = c.height;
+  
+    var numberOfTilesX_axis = 10;
+    var numberOfTilesY_axis = numberOfTilesX_axis;
+  
+    var player = {
+      radius: (width/(numberOfTilesX_axis*2)) - (width/120),
+      X: width/(numberOfTilesX_axis*2),
+      Y: width/(numberOfTilesX_axis*2),
 
-    for (var i = 1; i < 10; i++) {
+      // drawPlayer: 
+      //       function
+      // {
+      //   console.log("this should draw the player again");
+      // },
+
+    };
+
+    for (var i = 1; i < numberOfTilesX_axis; i++) {
         ctx.beginPath();
-        ctx.moveTo(i * (width / 10), 0);
-        ctx.lineTo(i * (width / 10), height);
+        ctx.moveTo(i * (width / numberOfTilesX_axis), 0);
+        ctx.lineTo(i * (width / numberOfTilesX_axis), height);
         ctx.stroke();
     }
 
-    for (var i = 1; i < 10; i++) {
+    for (var i = 1; i < numberOfTilesY_axis; i++) {
         ctx.beginPath();
-        ctx.moveTo(0, i * (height / 10));
-        ctx.lineTo(width, i * (height / 10));
+        ctx.moveTo(0, i * (height / numberOfTilesY_axis));
+        ctx.lineTo(width, i * (height / numberOfTilesY_axis));
         ctx.stroke();
     }
+  
+      ctx.beginPath();
+      ctx.arc(player.X, player.Y, player.radius, 0, 2 * Math.PI, false);
+      ctx.fillStyle = '#BADA55';
+      ctx.fill();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = '#B000B5';
+      ctx.stroke();
+
+      document.addEventListener('keydown', function(event) {
+        const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
+        switch (key) {
+        case "ArrowLeft":
+            alert('left');
+            break;
+        case "ArrowUp":
+            alert('up');
+            break;
+        case "ArrowRight":
+            alert('right');
+            break;
+        case "ArrowDown":
+            alert('down');
+            break;
+        }
+      });
+  
 </script>
 
 </html>
