@@ -8,6 +8,7 @@
 </head>
 
 <body>
+    <p>Use arrow keys to move</p>
     <canvas id="myCanvas" width="600" height="600" style="border:1px solid #000000;"></canvas>
 </body>
 <script>
@@ -19,21 +20,12 @@
   
     var numberOfTilesX_axis = 10;
     var numberOfTilesY_axis = numberOfTilesX_axis;
-  
-    var player = {
-      radius: (width/(numberOfTilesX_axis*2)) - (width/120),
-      X: width/(numberOfTilesX_axis*2),
-      Y: width/(numberOfTilesX_axis*2),
 
-      // drawPlayer: 
-      //       function
-      // {
-      //   console.log("this should draw the player again");
-      // },
-
-    };
-
-    for (var i = 1; i < numberOfTilesX_axis; i++) {
+function drawTileGrid()
+{
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#000000';
+      for (var i = 1; i < numberOfTilesX_axis; i++) {
         ctx.beginPath();
         ctx.moveTo(i * (width / numberOfTilesX_axis), 0);
         ctx.lineTo(i * (width / numberOfTilesX_axis), height);
@@ -46,33 +38,97 @@
         ctx.lineTo(width, i * (height / numberOfTilesY_axis));
         ctx.stroke();
     }
+}
+
+var tileToPixel = [];
+
+//create array for getting pixel center points of tiles
+    for(var i = 1; i <= numberOfTilesY_axis; i++)
+    {
+        tileToPixel.push((i*(width/(numberOfTilesX_axis)))-(width/(numberOfTilesX_axis*2)));
+    }
+
+        var player = {
+      radius: (width/(numberOfTilesX_axis*2)) - (width/120),
+      X: 4,
+      Y: 5,
+
+      // drawPlayer: 
+      //       function
+      // {
+      //   console.log("this should draw the player again");
+      // },
+
+    };
   
+      function drawPlayer(X,Y)
+      {
       ctx.beginPath();
-      ctx.arc(player.X, player.Y, player.radius, 0, 2 * Math.PI, false);
+      ctx.arc(tileToPixel[X],tileToPixel[Y], player.radius, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#BADA55';
       ctx.fill();
       ctx.lineWidth = 5;
       ctx.strokeStyle = '#B000B5';
       ctx.stroke();
+      }
+
+      function reDrawCanvas()
+      {
+        ctx.clearRect(0, 0, width, height);
+        drawTileGrid();
+        drawPlayer(player.X, player.Y);
+      }
+  
+  drawTileGrid();
+  drawPlayer(player.X, player.Y);
 
       document.addEventListener('keydown', function(event) {
         const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
         switch (key) {
         case "ArrowLeft":
-            alert('left');
+            if(player.X < 1)
+            {
+              alert("out of bounds");
+            }
+            else
+            {
+              player.X -= 1;
+            }
             break;
         case "ArrowUp":
-            alert('up');
+            if(player.Y < 1)
+            {
+              alert("out of bounds");
+            }
+            else
+            {
+              player.Y -= 1;
+            }
             break;
         case "ArrowRight":
-            alert('right');
+            if(player.X >= numberOfTilesX_axis-1)
+            {
+              alert("out of bounds");
+            }
+            else
+            {
+              player.X += 1;
+            }
             break;
-        case "ArrowDown":
-            alert('down');
+        case "ArrowDown":            
+            if(player.Y >= numberOfTilesY_axis-1)
+            {
+              alert("out of bounds");
+            }
+            else
+            {
+              player.Y += 1;
+            }
             break;
         }
+        reDrawCanvas()
       });
-  
+
 </script>
 
 </html>
