@@ -20,7 +20,8 @@
   </div>
   <div style="display: inline-block" id="TextDiv">
         <p>Use arrow keys to move.</p> 
-        <p id="WhatIsGoal">Move to the green tile in bottom right.</p>
+        <p>Move to the green tile.</p>
+        <p id="Points"></p>
       </div>
 </body>
 <script>
@@ -35,6 +36,8 @@
 
     var centerOfTileToSideOfTile = (width/(numberOfTilesX_axis*2));
     var centerOfTileToTopOfTile = (width/(numberOfTilesX_axis*2));
+
+    var points = 0;
 
 function drawTileGrid()
 {
@@ -55,17 +58,6 @@ function drawTileGrid()
     }
 }
 
-function drawGoalTile()
-{
-  ctx.beginPath();
-  ctx.lineWidth=2;
-  ctx.strokeStyle='#11DAFF';
-  ctx.fillStyle = "green";
-  ctx.rect(tileToPixelCenter[numberOfTilesX_axis-1]-centerOfTileToSideOfTile,tileToPixelCenter[numberOfTilesY_axis-1]-centerOfTileToTopOfTile,centerOfTileToSideOfTile*2,centerOfTileToTopOfTile*2); 
-  ctx.fill();
-  ctx.stroke();
-}
-
 var tileToPixelCenter = [];
 
 //create array for getting pixel center points of tiles
@@ -73,11 +65,18 @@ var tileToPixelCenter = [];
     {
         tileToPixelCenter.push((i*(width/(numberOfTilesX_axis)))-(width/(numberOfTilesX_axis*2)));
     }
+
+
         var player = {
       radius: (centerOfTileToSideOfTile) - (width/120),
       X: 0,
       Y: 0,
     };
+
+    var goalTile = {
+      X: 9,
+      Y: 9,
+    }
   
       function drawPlayer(X,Y)
       {
@@ -90,11 +89,34 @@ var tileToPixelCenter = [];
       ctx.stroke();
       }
 
-      function checkForVictory()
+    function drawGoalTile(X,Y)
+    {
+      ctx.beginPath();
+      ctx.lineWidth=2;
+      ctx.strokeStyle='#11DAFF';
+      ctx.fillStyle = "green";
+      ctx.rect(tileToPixelCenter[X]-centerOfTileToSideOfTile,tileToPixelCenter[Y]-centerOfTileToTopOfTile,centerOfTileToSideOfTile*2,centerOfTileToTopOfTile*2); 
+      ctx.fill();
+      ctx.stroke();
+    }
+
+      function checkForGoal()
       {
-        if(player.X == numberOfTilesX_axis-1 && player.Y == numberOfTilesY_axis-1)
+        if(player.X == goalTile.X && player.Y == goalTile.Y)
         {
-          document.getElementById("WhatIsGoal").innerText = "YOU WIN!";
+          points += 1;
+          if((goalTile.X == numberOfTilesX_axis-1) && (goalTile.Y == numberOfTilesY_axis-1))
+          {
+            goalTile.X = 0;
+            goalTile.Y = 0;
+          }
+         else if((goalTile.X == 0) && (goalTile.Y == 0))
+          {
+            goalTile.X = numberOfTilesX_axis-1;
+            goalTile.Y = numberOfTilesY_axis-1;
+          }
+          document.getElementById("Points").innerText = "You have " + points + " points";
+          console.log(goalTile);
         }
       }
 
@@ -102,13 +124,13 @@ var tileToPixelCenter = [];
       {
         ctx.clearRect(0, 0, width, height);
         drawTileGrid();
-        drawGoalTile();
+        checkForGoal()
+        drawGoalTile(goalTile.X,goalTile.Y);
         drawPlayer(player.X, player.Y);
-        checkForVictory()
       }
   
   drawTileGrid();
-  drawGoalTile();
+  drawGoalTile(goalTile.X,goalTile.Y);
   drawPlayer(player.X, player.Y);
 
       document.addEventListener('keydown', function(event) {
