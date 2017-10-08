@@ -5,11 +5,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>GridMove</title>
+    <style>
+
+      div#TextDiv {
+        vertical-align: top;
+      }
+
+    </style>
 </head>
 
 <body>
-    <p>Use arrow keys to move</p>
-    <canvas id="myCanvas" width="600" height="600" style="border:1px solid #000000;"></canvas>
+  <div style="display: inline-block">
+    <canvas id="myCanvas" width="600" height="600" style="border:10px solid #000000;"></canvas>
+  </div>
+  <div style="display: inline-block" id="TextDiv">
+        <p>Use arrow keys to move.</p> 
+        <p id="WhatIsGoal">Move to the green tile in bottom right.</p>
+      </div>
 </body>
 <script>
     var c = document.getElementById("myCanvas");
@@ -21,50 +33,56 @@
     var numberOfTilesX_axis = 10;
     var numberOfTilesY_axis = numberOfTilesX_axis;
 
+    var centerOfTileToSideOfTile = (width/(numberOfTilesX_axis*2));
+    var centerOfTileToTopOfTile = (width/(numberOfTilesX_axis*2));
+
 function drawTileGrid()
 {
       ctx.lineWidth = 1;
       ctx.strokeStyle = '#000000';
       for (var i = 1; i < numberOfTilesX_axis; i++) {
         ctx.beginPath();
-        ctx.moveTo(i * (width / numberOfTilesX_axis), 0);
-        ctx.lineTo(i * (width / numberOfTilesX_axis), height);
+        ctx.moveTo(i * (centerOfTileToSideOfTile*2), 0);
+        ctx.lineTo(i * (centerOfTileToSideOfTile*2), height);
         ctx.stroke();
     }
 
     for (var i = 1; i < numberOfTilesY_axis; i++) {
         ctx.beginPath();
-        ctx.moveTo(0, i * (height / numberOfTilesY_axis));
-        ctx.lineTo(width, i * (height / numberOfTilesY_axis));
+        ctx.moveTo(0, i * (centerOfTileToTopOfTile*2));
+        ctx.lineTo(width, i * (centerOfTileToTopOfTile*2));
         ctx.stroke();
     }
 }
 
-var tileToPixel = [];
+function drawGoalTile()
+{
+  ctx.beginPath();
+  ctx.lineWidth=2;
+  ctx.strokeStyle='#11DAFF';
+  ctx.fillStyle = "green";
+  ctx.rect(tileToPixelCenter[numberOfTilesX_axis-1]-centerOfTileToSideOfTile,tileToPixelCenter[numberOfTilesY_axis-1]-centerOfTileToTopOfTile,centerOfTileToSideOfTile*2,centerOfTileToTopOfTile*2); 
+  ctx.fill();
+  ctx.stroke();
+}
+
+var tileToPixelCenter = [];
 
 //create array for getting pixel center points of tiles
     for(var i = 1; i <= numberOfTilesY_axis; i++)
     {
-        tileToPixel.push((i*(width/(numberOfTilesX_axis)))-(width/(numberOfTilesX_axis*2)));
+        tileToPixelCenter.push((i*(width/(numberOfTilesX_axis)))-(width/(numberOfTilesX_axis*2)));
     }
-
         var player = {
-      radius: (width/(numberOfTilesX_axis*2)) - (width/120),
-      X: 4,
-      Y: 5,
-
-      // drawPlayer: 
-      //       function
-      // {
-      //   console.log("this should draw the player again");
-      // },
-
+      radius: (centerOfTileToSideOfTile) - (width/120),
+      X: 0,
+      Y: 0,
     };
   
       function drawPlayer(X,Y)
       {
       ctx.beginPath();
-      ctx.arc(tileToPixel[X],tileToPixel[Y], player.radius, 0, 2 * Math.PI, false);
+      ctx.arc(tileToPixelCenter[X],tileToPixelCenter[Y], player.radius, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#BADA55';
       ctx.fill();
       ctx.lineWidth = 5;
@@ -72,14 +90,25 @@ var tileToPixel = [];
       ctx.stroke();
       }
 
+      function checkForVictory()
+      {
+        if(player.X == numberOfTilesX_axis-1 && player.Y == numberOfTilesY_axis-1)
+        {
+          document.getElementById("WhatIsGoal").innerText = "YOU WIN!";
+        }
+      }
+
       function reDrawCanvas()
       {
         ctx.clearRect(0, 0, width, height);
         drawTileGrid();
+        drawGoalTile();
         drawPlayer(player.X, player.Y);
+        checkForVictory()
       }
   
   drawTileGrid();
+  drawGoalTile();
   drawPlayer(player.X, player.Y);
 
       document.addEventListener('keydown', function(event) {
