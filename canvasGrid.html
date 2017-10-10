@@ -25,6 +25,10 @@
       </div>
 </body>
 <script>
+
+//TODO: convert all == to ===
+//be consistent about x vs X (x is paramenter and temp while X is property of object)
+
     var c = document.getElementById("myCanvas");
     var ctx = c.getContext("2d");
 
@@ -34,9 +38,17 @@
     var numberOfTilesX_axis = 10;
     var numberOfTilesY_axis = numberOfTilesX_axis;
 
+//distance calculation
     var centerOfTileToSideOfTile = (width/(numberOfTilesX_axis*2));
     var centerOfTileToTopOfTile = (width/(numberOfTilesX_axis*2));
 
+//pixel location finder
+    var tileToPixelCenter = [];
+
+//list of tiles without pieces on it
+    var openTiles = [];
+
+//game data
     var points = 0;
 
 function drawTileGrid()
@@ -58,13 +70,14 @@ function drawTileGrid()
     }
 }
 
-var tileToPixelCenter = [];
-
 //create array for getting pixel center points of tiles
-    for(var i = 1; i <= numberOfTilesY_axis; i++)
+(function getPixelCenterPointsOfTiles()
+{
+      for(var i = 1; i <= numberOfTilesY_axis; i++)
     {
         tileToPixelCenter.push((i*(width/(numberOfTilesX_axis)))-(width/(numberOfTilesX_axis*2)));
     }
+})();
 
 
         var player = {
@@ -74,12 +87,13 @@ var tileToPixelCenter = [];
     };
 
     var goalTile = {
-      X: 9,
-      Y: 9,
+      X: numberOfTilesX_axis-1,
+      Y: numberOfTilesY_axis-1,
     }
   
       function drawPlayer(X,Y)
       {
+        //create generalized function for drawing player and enemys
       ctx.beginPath();
       ctx.arc(tileToPixelCenter[X],tileToPixelCenter[Y], player.radius, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#BADA55';
@@ -91,6 +105,7 @@ var tileToPixelCenter = [];
 
     function drawGoalTile(X,Y)
     {
+      //use this funct? colorTile(x,y,"blue");
       ctx.beginPath();
       ctx.lineWidth=2;
       ctx.strokeStyle='#11DAFF';
@@ -120,15 +135,63 @@ var tileToPixelCenter = [];
         }
       }
 
+      function findAllOpenTiles()
+      {
+        for(var x = 0; x <= numberOfTilesX_axis; x++)
+        {
+            for(var y = 0; y <= numberOfTilesY_axis; y++)
+          {
+            if(checkIfTileHasPieceOnIt(x,y))
+            {
+              colorTile(x,y,"blue");
+              //instead of coloring tiles push available tiles to an array, then randomly choose a tile to add a piece to.
+            }
+          }
+        }
+      }
+
+      function checkIfTileHasPieceOnIt(x,y)
+      {
+        if(player.X === x && player.Y ===y)
+        {
+          return false
+        }
+        if(goalTile.X === x && goalTile.Y ===y)
+        {
+          return false
+        }
+        else 
+        {
+          return true;
+        }
+      }
+
+      function colorTile(x,y,color)
+      {
+        ctx.beginPath();
+        ctx.lineWidth=2;
+        ctx.strokeStyle="yellow";
+        ctx.fillStyle = color;
+        ctx.rect(tileToPixelCenter[x]-centerOfTileToSideOfTile,tileToPixelCenter[y]-centerOfTileToTopOfTile,centerOfTileToSideOfTile*2,centerOfTileToTopOfTile*2); 
+        ctx.fill();
+        ctx.stroke();
+      }
+
       function reDrawCanvas()
       {
         ctx.clearRect(0, 0, width, height);
+        //draw board
         drawTileGrid();
         checkForGoal()
         drawGoalTile(goalTile.X,goalTile.Y);
+        //draw pieces: player and obstacles
         drawPlayer(player.X, player.Y);
+
+        findAllOpenTiles();
       }
   
+
+
   drawTileGrid();
   drawGoalTile(goalTile.X,goalTile.Y);
   drawPlayer(player.X, player.Y);
