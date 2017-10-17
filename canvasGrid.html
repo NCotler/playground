@@ -46,10 +46,12 @@
     var tileToPixelCenter = [];
 
 //list of tiles without pieces on it
-    var openTiles = [];
+    var openTiles = []; //don't need this? especially don't need this as global
 
 //game data
     var points = 0;
+    var enemyIDtracker = 0;
+    var enemyArr = [];
 
 function drawTileGrid()
 {
@@ -90,6 +92,25 @@ function drawTileGrid()
       X: numberOfTilesX_axis-1,
       Y: numberOfTilesY_axis-1,
     }
+
+    //constructor for Enemy piece
+    function Enemy(ID, X, Y)
+    {
+      this.ID = ID;
+      this.X = X;
+      this.Y = Y;
+      this.radius = (centerOfTileToSideOfTile) - (width/120);
+      this.drawEnemy = function()
+      {
+        ctx.beginPath();
+        ctx.arc(tileToPixelCenter[X],tileToPixelCenter[Y], player.radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'gray';
+        ctx.stroke();
+      }
+    }
   
       function drawPlayer(X,Y)
       {
@@ -120,6 +141,10 @@ function drawTileGrid()
         if(player.X == goalTile.X && player.Y == goalTile.Y)
         {
           points += 1;
+          let myArray = findAllOpenTiles();
+          let rand = myArray[Math.floor(Math.random() * myArray.length)];
+          enemyArr.push(new Enemy(enemyIDtracker, rand.X, rand.Y));
+          enemyIDtracker += 1;
           if((goalTile.X == numberOfTilesX_axis-1) && (goalTile.Y == numberOfTilesY_axis-1))
           {
             goalTile.X = 0;
@@ -131,35 +156,57 @@ function drawTileGrid()
             goalTile.Y = numberOfTilesY_axis-1;
           }
           document.getElementById("Points").innerText = "You have " + points + " points";
-          console.log(goalTile);
         }
       }
 
+      function Tile(x,y)
+      {
+        this.X = x;
+        this.Y = y;
+      }
+
+      //returns array of open tiles
       function findAllOpenTiles()
       {
-        for(var x = 0; x <= numberOfTilesX_axis; x++)
+        var tempOpenTiles = [];
+        for(var x = 0; x < numberOfTilesX_axis; x++)
         {
-            for(var y = 0; y <= numberOfTilesY_axis; y++)
+            for(var y = 0; y < numberOfTilesY_axis; y++)
           {
             if(checkIfTileHasPieceOnIt(x,y))
             {
-              colorTile(x,y,"blue");
+              //colorTile(x,y,"blue");
               //instead of coloring tiles push available tiles to an array, then randomly choose a tile to add a piece to.
+              tempOpenTiles.push(new Tile(x,y));
             }
           }
         }
+        return tempOpenTiles;
       }
 
       function checkIfTileHasPieceOnIt(x,y)
       {
+        for(var i = 0; i < enemyArr.length; i++)
+        {
+          if(enemyArr[i].X === x && enemyArr[i].Y ===y)
+            {
+              return false
+            }
+        }
+        //just do a for loop through all game pieces
         if(player.X === x && player.Y ===y)
         {
           return false
         }
-        if(goalTile.X === x && goalTile.Y ===y)
+        if(numberOfTilesX_axis-1 === x && numberOfTilesY_axis-1 ===y)
         {
           return false
         }
+        if(0 === x && 0 ===y)
+        {
+          return false
+        }
+        //also check if it is other goalTile (make BOTH goal tiles off limit)
         else 
         {
           return true;
@@ -177,17 +224,36 @@ function drawTileGrid()
         ctx.stroke();
       }
 
+      function checkIfPlayerTriesToMoveOntoEnemy()
+      {
+        for(var i = 0; i < enemyArr.length; i++)
+        {
+          if(player.X === enemyArr[i].X && player.Y === enemyArr[i].Y)
+          {
+            alert("you moved onto an enemy. You lose all points!");
+            points = 0;
+            document.getElementById("Points").innerText = "You have " + points + " points";
+          }
+        }
+      }
+
       function reDrawCanvas()
       {
         ctx.clearRect(0, 0, width, height);
         //draw board
         drawTileGrid();
-        checkForGoal()
+        checkForGoal();
         drawGoalTile(goalTile.X,goalTile.Y);
-        //draw pieces: player and obstacles
+        //draw pieces: player and enemys
+        for(var i = 0; i < enemyArr.length; i++)
+        {
+          enemyArr[i].drawEnemy();
+        }
+
         drawPlayer(player.X, player.Y);
 
-        findAllOpenTiles();
+        checkIfPlayerTriesToMoveOntoEnemy();
+
       }
   
 
@@ -242,6 +308,10 @@ function drawTileGrid()
         }
         reDrawCanvas()
       });
+
+//todo: prototype chain piece -> player/enemy/goal? player and enemy inherit prototype for radius property and drawing player and enemy
+
+//todo: create a tile object for putting int open tiles array and for methods for coloring or methods like checking if a tile is open.
 
 </script>
 
