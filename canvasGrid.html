@@ -116,22 +116,22 @@ function drawTileGrid()
       {
         var possibleMoves = [];
         //check left
-        if(checkIfTileHasPieceOnIt(this.X-1, this.Y) && this.X-1 > 0)
+        if(checkIfTileHasPieceOnIt(this.X-1, this.Y) && this.X-1 >= 0)
         {
           possibleMoves.push({X:this.X-1, Y:this.Y, whichWay: "left"});
         }
         //check right
-        if(checkIfTileHasPieceOnIt(this.X+1, this.Y) && this.X+1 < numberOfTilesX_axis-1)
+        if(checkIfTileHasPieceOnIt(this.X+1, this.Y) && this.X+1 <= numberOfTilesX_axis-1)
         {
           possibleMoves.push({X:this.X+1, Y:this.Y, whichWay: "right"});
         }
         //check above
-        if(checkIfTileHasPieceOnIt(this.X, this.Y-1) && this.Y-1 > 0)
+        if(checkIfTileHasPieceOnIt(this.X, this.Y-1) && this.Y-1 >= 0)
         {
           possibleMoves.push({X:this.X, Y:this.Y-1, whichWay: "above"});
         }
         //check below
-        if(checkIfTileHasPieceOnIt(this.X, this.Y+1) && this.Y+1 < numberOfTilesY_axis-1)
+        if(checkIfTileHasPieceOnIt(this.X, this.Y+1) && this.Y+1 <= numberOfTilesY_axis-1)
         {
           possibleMoves.push({X:this.X, Y:this.Y+1, whichWay: "below"});
         }
