@@ -100,15 +100,48 @@ function drawTileGrid()
       this.X = X;
       this.Y = Y;
       this.radius = (centerOfTileToSideOfTile) - (width/120);
+
       this.drawEnemy = function()
       {
         ctx.beginPath();
-        ctx.arc(tileToPixelCenter[X],tileToPixelCenter[Y], player.radius, 0, 2 * Math.PI, false);
+        ctx.arc(tileToPixelCenter[this.X],tileToPixelCenter[this.Y], player.radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = 'red';
         ctx.fill();
         ctx.lineWidth = 5;
         ctx.strokeStyle = 'gray';
         ctx.stroke();
+      }
+
+      this.moveEnemy = function()
+      {
+        var possibleMoves = [];
+        //check left
+        if(checkIfTileHasPieceOnIt(this.X-1, this.Y) && this.X-1 > 0)
+        {
+          possibleMoves.push({X:this.X-1, Y:this.Y, whichWay: "left"});
+        }
+        //check right
+        if(checkIfTileHasPieceOnIt(this.X+1, this.Y) && this.X+1 < numberOfTilesX_axis-1)
+        {
+          possibleMoves.push({X:this.X+1, Y:this.Y, whichWay: "right"});
+        }
+        //check above
+        if(checkIfTileHasPieceOnIt(this.X, this.Y-1) && this.Y-1 > 0)
+        {
+          possibleMoves.push({X:this.X, Y:this.Y-1, whichWay: "above"});
+        }
+        //check below
+        if(checkIfTileHasPieceOnIt(this.X, this.Y+1) && this.Y+1 < numberOfTilesY_axis-1)
+        {
+          possibleMoves.push({X:this.X, Y:this.Y+1, whichWay: "below"});
+        }
+
+        if(possibleMoves.length > 0)
+        {
+          let rand = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+          this.X = rand.X;
+          this.Y = rand.Y;
+        }
       }
     }
   
@@ -245,14 +278,18 @@ function drawTileGrid()
         checkForGoal();
         drawGoalTile(goalTile.X,goalTile.Y);
         //draw pieces: player and enemys
+
+        drawPlayer(player.X, player.Y);
+        checkIfPlayerTriesToMoveOntoEnemy();
+
+        for(var i = 0; i < enemyArr.length; i++)
+        {
+          enemyArr[i].moveEnemy();
+        }
         for(var i = 0; i < enemyArr.length; i++)
         {
           enemyArr[i].drawEnemy();
         }
-
-        drawPlayer(player.X, player.Y);
-
-        checkIfPlayerTriesToMoveOntoEnemy();
 
       }
   
