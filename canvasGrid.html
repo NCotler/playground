@@ -45,13 +45,11 @@
 //pixel location finder
     var tileToPixelCenter = [];
 
-//list of tiles without pieces on it
-    var openTiles = []; //don't need this? especially don't need this as global
-
 //game data
     var points = 0;
     var enemyIDtracker = 0;
     var enemyArr = [];
+
 
 function drawTileGrid()
 {
@@ -73,6 +71,7 @@ function drawTileGrid()
 }
 
 //create array for getting pixel center points of tiles
+//e.g. tileToPixelCenter[2] is center of 2nd tile
 (function getPixelCenterPointsOfTiles()
 {
       for(var i = 1; i <= numberOfTilesY_axis; i++)
@@ -84,8 +83,13 @@ function drawTileGrid()
 
         var player = {
       radius: (centerOfTileToSideOfTile) - (width/120),
+      //X, Y, destX, and destY are tile positions; not pixel positions
       X: 0,
       Y: 0,
+      destX: 0,
+      destY: 0,
+      pixelX: tileToPixelCenter[0],
+      pixelY: tileToPixelCenter[0],
     };
 
     var goalTile = {
@@ -99,12 +103,18 @@ function drawTileGrid()
       this.ID = ID;
       this.X = X;
       this.Y = Y;
+      this.destX = X,
+      this.destY = Y,
+      this.pixelX = tileToPixelCenter[X],
+      this.pixelY = tileToPixelCenter[Y],
       this.radius = (centerOfTileToSideOfTile) - (width/120);
 
       this.drawEnemy = function()
       {
+        //create generalized function for drawing player and enemys
+        //x and y are pixels and not tiles
         ctx.beginPath();
-        ctx.arc(tileToPixelCenter[this.X],tileToPixelCenter[this.Y], player.radius, 0, 2 * Math.PI, false);
+        ctx.arc(this.pixelX, this.pixelY, this.radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = 'red';
         ctx.fill();
         ctx.lineWidth = 5;
@@ -139,17 +149,22 @@ function drawTileGrid()
         if(possibleMoves.length > 0)
         {
           let rand = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+          this.pixelX = tileToPixelCenter[this.X];
+          this.pixelY = tileToPixelCenter[this.Y];
           this.X = rand.X;
           this.Y = rand.Y;
+          this.destX = rand.X;
+          this.destY = rand.Y;
         }
       }
     }
   
-      function drawPlayer(X,Y)
+      function drawPlayer(x,y)
       {
         //create generalized function for drawing player and enemys
+        //x and y are pixels and not tiles
       ctx.beginPath();
-      ctx.arc(tileToPixelCenter[X],tileToPixelCenter[Y], player.radius, 0, 2 * Math.PI, false);
+      ctx.arc(x,y, player.radius, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#BADA55';
       ctx.fill();
       ctx.lineWidth = 5;
@@ -278,26 +293,85 @@ function drawTileGrid()
         checkForGoal();
         drawGoalTile(goalTile.X,goalTile.Y);
         //draw pieces: player and enemys
-
-        drawPlayer(player.X, player.Y);
+        drawPlayer(player.pixelX, player.pixelY);
         checkIfPlayerTriesToMoveOntoEnemy();
 
+        // for(var i = 0; i < enemyArr.length; i++)
+        // {
+        //   enemyArr[i].moveEnemy();
+        // }
         for(var i = 0; i < enemyArr.length; i++)
         {
-          enemyArr[i].moveEnemy();
-        }
-        for(var i = 0; i < enemyArr.length; i++)
-        {
-          enemyArr[i].drawEnemy();
+          enemyArr[i].drawEnemy(enemyArr[i].pixelX,enemyArr[i].pixelY);
         }
 
       }
   
+function animatePlayer()
+{
+      if(tileToPixelCenter[player.destX] < player.pixelX)
+        {
+          player.pixelX -= 5;
+          reDrawCanvas();
+        }
+      if(tileToPixelCenter[player.destX] > player.pixelX)
+        {
+          player.pixelX += 5;
+          reDrawCanvas();
+        }
+      if(tileToPixelCenter[player.destY] < player.pixelY)
+        {
+          player.pixelY -= 5;
+          reDrawCanvas();
+        }
+      if(tileToPixelCenter[player.destY] > player.pixelY)
+        {
+          player.pixelY += 5;
+          reDrawCanvas();
+        }
+  
+      if(tileToPixelCenter[player.destX] !== player.pixelX || tileToPixelCenter[player.destY] !== player.pixelY)
+        {
+          requestAnimationFrame(animatePlayer);
+        }
+}
 
+function animateEnemys(enemy)
+{
+  for(var i = 0; i < enemyArr.length; i++)
+    {
+      if(tileToPixelCenter[enemyArr[i].destX] < enemyArr[i].pixelX)
+        {
+          enemyArr[i].pixelX -= 5;
+        }
+      if(tileToPixelCenter[enemyArr[i].destX] > enemyArr[i].pixelX)
+        {
+          enemyArr[i].pixelX += 5;
+        }
+      if(tileToPixelCenter[enemyArr[i].destY] < enemyArr[i].pixelY)
+        {
+          enemyArr[i].pixelY -= 5;
+        }
+      if(tileToPixelCenter[enemyArr[i].destY] > enemyArr[i].pixelY)
+        {
+          enemyArr[i].pixelY += 5;
+        }
+      }
+    
+    reDrawCanvas();
+
+    if(enemyArr.length > 0) //come up with a better check for when enemy finishes animations
+    {
+          if(tileToPixelCenter[enemyArr[0].destX] !== enemyArr[0].pixelX || tileToPixelCenter[enemyArr[0].destY] !== enemyArr[0].pixelY)
+            {
+              requestAnimationFrame(animateEnemys);
+            }
+    }
+}
 
   drawTileGrid();
   drawGoalTile(goalTile.X,goalTile.Y);
-  drawPlayer(player.X, player.Y);
+  drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
 
       document.addEventListener('keydown', function(event) {
         const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
@@ -309,7 +383,15 @@ function drawTileGrid()
             }
             else
             {
+              player.pixelX = tileToPixelCenter[player.X];
               player.X -= 1;
+              player.destX -= 1;
+              animatePlayer();
+                for(var i = 0; i < enemyArr.length; i++)
+                {
+                  enemyArr[i].moveEnemy();
+                }
+              animateEnemys();
             }
             break;
         case "ArrowUp":
@@ -319,7 +401,15 @@ function drawTileGrid()
             }
             else
             {
+              player.pixelY = tileToPixelCenter[player.Y];
               player.Y -= 1;
+              player.destY -= 1;
+              animatePlayer();
+                for(var i = 0; i < enemyArr.length; i++)
+                {
+                  enemyArr[i].moveEnemy();
+                }
+              animateEnemys();
             }
             break;
         case "ArrowRight":
@@ -329,7 +419,15 @@ function drawTileGrid()
             }
             else
             {
+              player.pixelX = tileToPixelCenter[player.X];
               player.X += 1;
+              player.destX += 1;
+              animatePlayer();
+                for(var i = 0; i < enemyArr.length; i++)
+                {
+                  enemyArr[i].moveEnemy();
+                }
+              animateEnemys();
             }
             break;
         case "ArrowDown":            
@@ -339,11 +437,18 @@ function drawTileGrid()
             }
             else
             {
+              player.pixelY = tileToPixelCenter[player.Y];
               player.Y += 1;
+              player.destY += 1;
+              animatePlayer();
+                for(var i = 0; i < enemyArr.length; i++)
+                {
+                  enemyArr[i].moveEnemy();
+                }
+              animateEnemys();
             }
             break;
         }
-        reDrawCanvas()
       });
 
 //todo: prototype chain piece -> player/enemy/goal? player and enemy inherit prototype for radius property and drawing player and enemy
