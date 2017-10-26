@@ -22,6 +22,7 @@
         <p>Use arrow keys to move.</p> 
         <p>Move to the green tile.</p>
         <p id="Points"></p>
+        <p id="Gold"></p>
       </div>
 </body>
 <script>
@@ -47,8 +48,11 @@
 
 //game data
     var points = 0;
+    var gold = 0;
     var enemyIDtracker = 0;
     var enemyArr = [];
+    var goldIDtracker = 0;
+    var goldArr = [];
 
 
 function drawTileGrid()
@@ -98,15 +102,15 @@ function drawTileGrid()
     }
 
     //constructor for Enemy piece
-    function Enemy(ID, X, Y)
+    function Enemy(x, y, id)
     {
-      this.ID = ID;
-      this.X = X;
-      this.Y = Y;
-      this.destX = X,
-      this.destY = Y,
-      this.pixelX = tileToPixelCenter[X],
-      this.pixelY = tileToPixelCenter[Y],
+      this.ID = id;
+      this.X = x;
+      this.Y = y;
+      this.destX = x;
+      this.destY = y;
+      this.pixelX = tileToPixelCenter[x];
+      this.pixelY = tileToPixelCenter[y];
       this.radius = (centerOfTileToSideOfTile) - (width/120);
 
       this.drawEnemy = function()
@@ -158,6 +162,28 @@ function drawTileGrid()
         }
       }
     }
+
+    function Gold(x,y,id)
+    {
+      this.ID = id;
+      this.X = x;
+      this.Y = y;
+      this.radius = (centerOfTileToSideOfTile) - (width/120);
+
+      this.drawGold = function()
+      {
+        //create generalized function for drawing player and enemys
+        //x and y are pixels and not tiles
+        ctx.beginPath();
+        ctx.arc(tileToPixelCenter[this.X], tileToPixelCenter[this.Y], this.radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'blue';
+        ctx.stroke();
+      }
+
+    }
   
       function drawPlayer(x,y)
       {
@@ -191,8 +217,14 @@ function drawTileGrid()
           points += 1;
           let myArray = findAllOpenTiles();
           let rand = myArray[Math.floor(Math.random() * myArray.length)];
-          enemyArr.push(new Enemy(enemyIDtracker, rand.X, rand.Y));
+          enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
           enemyIDtracker += 1;
+
+          myArray = findAllOpenTiles();
+          rand = myArray[Math.floor(Math.random() * myArray.length)];
+          goldArr.push(new Gold(rand.X, rand.Y, enemyIDtracker));
+          goldIDtracker += 1;
+
           if((goalTile.X == numberOfTilesX_axis-1) && (goalTile.Y == numberOfTilesY_axis-1))
           {
             goalTile.X = 0;
@@ -241,6 +273,15 @@ function drawTileGrid()
               return false
             }
         }
+
+        for(var i = 0; i < goldArr.length; i++)
+        {
+          if(goldArr[i].X === x && goldArr[i].Y ===y)
+            {
+              return false
+            }
+        }
+
         //just do a for loop through all game pieces
         if(player.X === x && player.Y ===y)
         {
@@ -285,6 +326,28 @@ function drawTileGrid()
         }
       }
 
+      function checkIfPlayerTriesToMoveOntoGold()
+      {
+        for(var i = 0; i < goldArr.length; i++)
+        {
+          if(player.X === goldArr[i].X && player.Y === goldArr[i].Y)
+          {
+            gold += Math.floor(Math.random() * 20) + 1;
+            document.getElementById("Gold").innerText = "You have " + gold + " gold";
+            removeGoldFromArray(goldArr[i].ID)
+          }
+        }
+      }
+
+      function removeGoldFromArray(id)
+      {
+        var index = goldArr.map(function(g) { return g.ID; }).indexOf(id);
+        if (index > -1) 
+          {
+            goldArr.splice(index, 1);
+          }
+      }
+
       function reDrawCanvas()
       {
         ctx.clearRect(0, 0, width, height);
@@ -292,6 +355,10 @@ function drawTileGrid()
         drawTileGrid();
         checkForGoal();
         drawGoalTile(goalTile.X,goalTile.Y);
+        for(var i = 0; i < goldArr.length; i++)
+        {
+          goldArr[i].drawGold(goldArr[i].X,goldArr[i].Y);
+        }
         //draw pieces: player and enemys
         drawPlayer(player.pixelX, player.pixelY);
         checkIfPlayerTriesToMoveOntoEnemy();
@@ -386,6 +453,7 @@ function animateEnemys(enemy)
               player.pixelX = tileToPixelCenter[player.X];
               player.X -= 1;
               player.destX -= 1;
+              checkIfPlayerTriesToMoveOntoGold();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -404,6 +472,7 @@ function animateEnemys(enemy)
               player.pixelY = tileToPixelCenter[player.Y];
               player.Y -= 1;
               player.destY -= 1;
+              checkIfPlayerTriesToMoveOntoGold();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -422,6 +491,7 @@ function animateEnemys(enemy)
               player.pixelX = tileToPixelCenter[player.X];
               player.X += 1;
               player.destX += 1;
+              checkIfPlayerTriesToMoveOntoGold();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -440,6 +510,7 @@ function animateEnemys(enemy)
               player.pixelY = tileToPixelCenter[player.Y];
               player.Y += 1;
               player.destY += 1;
+              checkIfPlayerTriesToMoveOntoGold();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -456,6 +527,10 @@ function animateEnemys(enemy)
 //todo: create a tile object for putting int open tiles array and for methods for coloring or methods like checking if a tile is open.
 
     //todo: use functional programming like filter instead of looping through arrays
+
+    //todo: remove "check" functions from reDraw canvas funciton
+
+    //todo: bind checkIfPlayerTries and removeGold removeEnemy functions as one
 </script>
 
 </html>
