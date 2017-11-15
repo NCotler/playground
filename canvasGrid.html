@@ -327,7 +327,7 @@ function drawTileGrid()
         {
           if(player.X === enemyArr[i].X && player.Y === enemyArr[i].Y)
           {
-            alert("you moved onto an enemy. You lose all points!");
+            alert("you moved onto an enemy. You lose all " + points + " points!");
             points = 0;
             document.getElementById("Points").innerText = "You have " + points + " points";
           }
