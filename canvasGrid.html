@@ -21,8 +21,12 @@
   <div style="display: inline-block" id="TextDiv">
         <p>Use arrow keys to move.</p> 
         <p>Move to the green tile.</p>
-        <p id="Points"></p>
+        <p id="Points">You have 0 points</p>
+        <p id="PointsPerGoal">Points Per Goal is 1</p>
+        <p id="Moves">18/18 moves remain</p>
         <p id="Gold"></p>
+        <button type="button" onclick=BuyPointsPerGoal()>Buy Points Per Goal</button>
+        <button type="button" onclick=BuyExtraMoves()>Buy Extra Moves</button>
       </div>
 </body>
 <script>
@@ -53,6 +57,9 @@
     var enemyArr = [];
     var goldIDtracker = 0;
     var goldArr = [];
+    var maxMoves = 18;
+    var movesLeft = 18;
+    var PointsPerGoal = 1;
 
 
 function drawTileGrid()
@@ -214,7 +221,8 @@ function drawTileGrid()
       {
         if(player.X == goalTile.X && player.Y == goalTile.Y)
         {
-          points += 1;
+          movesLeft = maxMoves;
+          points += PointsPerGoal;
           let myArray = findAllOpenTiles();
           let rand = myArray[Math.floor(Math.random() * myArray.length)];
           enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
@@ -353,7 +361,6 @@ function drawTileGrid()
         ctx.clearRect(0, 0, width, height);
         //draw board
         drawTileGrid();
-        checkForGoal();
         drawGoalTile(goalTile.X,goalTile.Y);
         for(var i = 0; i < goldArr.length; i++)
         {
@@ -361,7 +368,6 @@ function drawTileGrid()
         }
         //draw pieces: player and enemys
         drawPlayer(player.pixelX, player.pixelY);
-        checkIfPlayerTriesToMoveOntoEnemy();
 
         // for(var i = 0; i < enemyArr.length; i++)
         // {
@@ -436,6 +442,48 @@ function animateEnemys(enemy)
     }
 }
 
+function updateMoves()
+{
+  movesLeft -= 1;
+  if(movesLeft < 0)
+  {
+    alert("You are out of moves! You lose! Final score: " + points);
+  }
+  checkIfPlayerTriesToMoveOntoEnemy();
+  checkForGoal();
+  document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
+}
+
+function BuyExtraMoves()
+{
+  if(gold >= 40)
+  {
+    gold -= 40;
+    document.getElementById("Gold").innerText = "You have " + gold + " gold";
+    maxMoves += 1;
+    document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
+  }
+  else
+  {
+    alert("This costs 40 gold! You don't have enough");
+  }
+}
+
+function BuyPointsPerGoal()
+{
+    if(gold >= 25)
+  {
+    gold -= 25;
+    document.getElementById("Gold").innerText = "You have " + gold + " gold";
+    PointsPerGoal += 1;
+    document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal;
+  }
+    else
+  {
+    alert("This costs 25 gold! You don't have enough");
+  }
+}
+
   drawTileGrid();
   drawGoalTile(goalTile.X,goalTile.Y);
   drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
@@ -454,6 +502,7 @@ function animateEnemys(enemy)
               player.X -= 1;
               player.destX -= 1;
               checkIfPlayerTriesToMoveOntoGold();
+              updateMoves();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -473,6 +522,7 @@ function animateEnemys(enemy)
               player.Y -= 1;
               player.destY -= 1;
               checkIfPlayerTriesToMoveOntoGold();
+              updateMoves();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -492,6 +542,7 @@ function animateEnemys(enemy)
               player.X += 1;
               player.destX += 1;
               checkIfPlayerTriesToMoveOntoGold();
+              updateMoves();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -511,6 +562,7 @@ function animateEnemys(enemy)
               player.Y += 1;
               player.destY += 1;
               checkIfPlayerTriesToMoveOntoGold();
+              updateMoves();
               animatePlayer();
                 for(var i = 0; i < enemyArr.length; i++)
                 {
@@ -531,6 +583,12 @@ function animateEnemys(enemy)
     //todo: remove "check" functions from reDraw canvas funciton
 
     //todo: bind checkIfPlayerTries and removeGold removeEnemy functions as one
+
+    //todo: have move's left be determined by map size. (it's variable)
+
+    //todo: create Shop object with prices for all items
+
+    //todo: create functions for updating <p> tags for easier maintainability
 </script>
 
 </html>
