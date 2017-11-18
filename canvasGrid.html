@@ -25,8 +25,8 @@
         <p id="PointsPerGoal">Points Per Goal is 1</p>
         <p id="Moves">18/18 moves remain</p>
         <p id="Gold"></p>
-        <button type="button" onclick=BuyPointsPerGoal()>Buy Points Per Goal</button>
-        <button type="button" onclick=BuyExtraMoves()>Buy Extra Moves</button>
+        <button type="button" onclick=BuyPointsPerGoal()>Buy Points Per Goal (25g)</button>
+        <button type="button" onclick=BuyExtraMoves()>Buy Extra Moves (40g)</button>
       </div>
 </body>
 <script>
@@ -176,6 +176,7 @@ function drawTileGrid()
       this.X = x;
       this.Y = y;
       this.radius = (centerOfTileToSideOfTile) - (width/120);
+      this.amount = Math.floor(Math.random() * 5) + 5;
 
       this.drawGold = function()
       {
@@ -188,6 +189,9 @@ function drawTileGrid()
         ctx.lineWidth = 5;
         ctx.strokeStyle = 'blue';
         ctx.stroke();
+        ctx.fillStyle = 'black';
+        ctx.font = "15px Arial";
+        ctx.fillText(this.amount,tileToPixelCenter[this.X],tileToPixelCenter[this.Y]);
       }
 
     }
@@ -223,6 +227,8 @@ function drawTileGrid()
         {
           movesLeft = maxMoves;
           points += PointsPerGoal;
+          gold += 10;
+          document.getElementById("Gold").innerText = "You have " + gold + " gold";
           let myArray = findAllOpenTiles();
           let rand = myArray[Math.floor(Math.random() * myArray.length)];
           enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
@@ -340,7 +346,7 @@ function drawTileGrid()
         {
           if(player.X === goldArr[i].X && player.Y === goldArr[i].Y)
           {
-            gold += Math.floor(Math.random() * 20) + 1;
+            gold += goldArr[i].amount;
             document.getElementById("Gold").innerText = "You have " + gold + " gold";
             removeGoldFromArray(goldArr[i].ID)
           }
@@ -448,6 +454,7 @@ function updateMoves()
   if(movesLeft < 0)
   {
     alert("You are out of moves! You lose! Final score: " + points);
+    points = 0;
   }
   checkIfPlayerTriesToMoveOntoEnemy();
   checkForGoal();
@@ -460,7 +467,7 @@ function BuyExtraMoves()
   {
     gold -= 40;
     document.getElementById("Gold").innerText = "You have " + gold + " gold";
-    maxMoves += 1;
+    maxMoves += 2;
     document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
   }
   else
@@ -589,6 +596,10 @@ function BuyPointsPerGoal()
     //todo: create Shop object with prices for all items
 
     //todo: create functions for updating <p> tags for easier maintainability
+
+    //todo: after you lose, there should be a “do you want to play again” button
+
+    //todo: high score list on the side, so participants can log in and keep their score
 </script>
 
 </html>
