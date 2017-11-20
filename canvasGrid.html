@@ -26,7 +26,10 @@
         <p id="Moves">18/18 moves remain</p>
         <p id="Gold"></p>
         <button type="button" onclick=BuyPointsPerGoal()>Buy Points Per Goal (25g)</button>
+        <br><br>
         <button type="button" onclick=BuyExtraMoves()>Buy Extra Moves (40g)</button>
+        <br><br>
+        <button type="button" onclick=Bomb()>Use A Bomb (100g)</button>
       </div>
 </body>
 <script>
@@ -280,6 +283,8 @@ function drawTileGrid()
 
       function checkIfTileHasPieceOnIt(x,y)
       {
+
+      //break this into smaller functions Check if tile has enemy on it. check if tile has player one it. check if tile has gold on it etc.
         for(var i = 0; i < enemyArr.length; i++)
         {
           if(enemyArr[i].X === x && enemyArr[i].Y ===y)
@@ -488,6 +493,34 @@ function BuyPointsPerGoal()
     else
   {
     alert("This costs 25 gold! You don't have enough");
+  }
+}
+
+function Bomb()
+{
+  var bombColor = "pink";
+      if(gold >= 100)
+  {
+    gold -= 100;
+    document.getElementById("Gold").innerText = "You have " + gold + " gold";
+    //Explode the bomb
+    enemyArr = enemyArr.filter(function(enemy)
+    {
+      return (Math.abs(player.X - enemy.X) > 1) || (Math.abs(player.Y - enemy.Y) > 1);
+    });
+    colorTile(player.X - 1, player.Y, bombColor);
+    colorTile(player.X + 1, player.Y, bombColor);
+    colorTile(player.X, player.Y - 1, bombColor);
+    colorTile(player.X, player.Y + 1, bombColor);
+
+    colorTile(player.X - 1, player.Y - 1, bombColor);
+    colorTile(player.X + 1, player.Y + 1, bombColor);
+    colorTile(player.X + 1, player.Y - 1, bombColor);
+    colorTile(player.X - 1, player.Y + 1, bombColor);
+  }
+    else
+  {
+    alert("This costs 100 gold! You don't have enough");
   }
 }
 
