@@ -406,7 +406,7 @@ function animateEnemys(enemy) {
     }
 }
 
-function updateMoves() {
+function updateMovesAndCheckDestination() {
     movesLeft -= 1;
     if (movesLeft < 0) {
         alert("You are out of moves! You lose! Final score: " + points);
@@ -414,6 +414,7 @@ function updateMoves() {
     }
     checkIfPlayerTriesToMoveOntoEnemy();
     checkForGoal();
+    checkIfPlayerTriesToMoveOntoGold();
     document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
 }
 
@@ -462,6 +463,16 @@ function Bomb() {
     }
 }
 
+function movePlayerThenMoveEnemy()
+{
+                updateMovesAndCheckDestination();
+                animatePlayer();
+                for (var i = 0; i < enemyArr.length; i++) {
+                    enemyArr[i].moveEnemy();
+                }
+                animateEnemys();
+}
+
 drawTileGrid();
 drawGoalTile(goalTile.X, goalTile.Y);
 drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
@@ -475,13 +486,7 @@ document.addEventListener('keydown', function(event) {
             } else {
                 player.pixelX = tileToPixelCenter[player.X];
                 player.X -= 1;
-                checkIfPlayerTriesToMoveOntoGold();
-                updateMoves();
-                animatePlayer();
-                for (var i = 0; i < enemyArr.length; i++) {
-                    enemyArr[i].moveEnemy();
-                }
-                animateEnemys();
+                movePlayerThenMoveEnemy();
             }
             break;
         case "ArrowUp":
@@ -490,13 +495,7 @@ document.addEventListener('keydown', function(event) {
             } else {
                 player.pixelY = tileToPixelCenter[player.Y];
                 player.Y -= 1;
-                checkIfPlayerTriesToMoveOntoGold();
-                updateMoves();
-                animatePlayer();
-                for (var i = 0; i < enemyArr.length; i++) {
-                    enemyArr[i].moveEnemy();
-                }
-                animateEnemys();
+                movePlayerThenMoveEnemy();
             }
             break;
         case "ArrowRight":
@@ -505,13 +504,7 @@ document.addEventListener('keydown', function(event) {
             } else {
                 player.pixelX = tileToPixelCenter[player.X];
                 player.X += 1;
-                checkIfPlayerTriesToMoveOntoGold();
-                updateMoves();
-                animatePlayer();
-                for (var i = 0; i < enemyArr.length; i++) {
-                    enemyArr[i].moveEnemy();
-                }
-                animateEnemys();
+                movePlayerThenMoveEnemy();
             }
             break;
         case "ArrowDown":
@@ -520,13 +513,7 @@ document.addEventListener('keydown', function(event) {
             } else {
                 player.pixelY = tileToPixelCenter[player.Y];
                 player.Y += 1;
-                checkIfPlayerTriesToMoveOntoGold();
-                updateMoves();
-                animatePlayer();
-                for (var i = 0; i < enemyArr.length; i++) {
-                    enemyArr[i].moveEnemy();
-                }
-                animateEnemys();
+                movePlayerThenMoveEnemy();
             }
             break;
     }
