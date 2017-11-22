@@ -95,8 +95,6 @@ var player = {
     //X, Y, X, and Y are tile positions; not pixel positions
     X: 0,
     Y: 0,
-    X: 0,
-    Y: 0,
     pixelX: tileToPixelCenter[0],
     pixelY: tileToPixelCenter[0],
 };
@@ -109,8 +107,6 @@ var goalTile = {
 //constructor for Enemy piece
 function Enemy(x, y, id) {
     this.ID = id;
-    this.X = x;
-    this.Y = y;
     this.X = x;
     this.Y = y;
     this.pixelX = tileToPixelCenter[x];
