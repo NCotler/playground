@@ -62,6 +62,12 @@ var maxMoves = 18;
 var movesLeft = 18;
 var PointsPerGoal = 1;
 
+var shopPrices = {
+    extraPoints: 25,
+    extraMoves: 40,
+    bomb: 100,
+};
+
 
 function drawTileGrid() {
     ctx.lineWidth = 1;
@@ -419,31 +425,34 @@ function updateMovesAndCheckDestination() {
 }
 
 function BuyExtraMoves() {
-    if (gold >= 40) {
-        gold -= 40;
+    if (gold >= shopPrices.extraMoves) {
+        console.log("first", maxMoves);
+        gold -= shopPrices.extraMoves;
+        console.log("second",maxMoves);
         document.getElementById("Gold").innerText = "You have " + gold + " gold";
         maxMoves += 2;
+        console.log("third",maxMoves);
         document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
     } else {
-        alert("This costs 40 gold! You don't have enough");
+        alert("This costs " + shopPrices.extraMoves + " gold! You don't have enough");
     }
 }
 
 function BuyPointsPerGoal() {
-    if (gold >= 25) {
-        gold -= 25;
+    if (gold >= shopPrices.extraPoints) {
+        gold -= shopPrices.extraPoints;
         document.getElementById("Gold").innerText = "You have " + gold + " gold";
         PointsPerGoal += 1;
         document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal;
     } else {
-        alert("This costs 25 gold! You don't have enough");
+        alert("This costs " + shopPrices.extraPoints + " gold! You don't have enough");
     }
 }
 
 function Bomb() {
     var bombColor = "pink";
-    if (gold >= 100) {
-        gold -= 100;
+    if (gold >= shopPrices.bomb) {
+        gold -= shopPrices.bomb;
         document.getElementById("Gold").innerText = "You have " + gold + " gold";
         //Explode the bomb
         enemyArr = enemyArr.filter(function(enemy) {
@@ -459,7 +468,7 @@ function Bomb() {
         colorTile(player.X + 1, player.Y - 1, bombColor);
         colorTile(player.X - 1, player.Y + 1, bombColor);
     } else {
-        alert("This costs 100 gold! You don't have enough");
+        alert("This costs " + shopPrices.bomb + " gold! You don't have enough");
     }
 }
 
