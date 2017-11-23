@@ -70,6 +70,14 @@ var shopPrices = {
     alertNotEnoughGold: function(price) { alert("This costs " + price + " gold! You don't have enough") },
 };
 
+var domUpdaters = 
+{
+    updatePoints: function() { document.getElementById("Points").innerText = "You have " + points + " points"; },
+    updatePointsPerGoal: function() { document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal; },
+    updateMoves: function() { document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain"; },
+    updateGold: function() { document.getElementById("Gold").innerText = "You have " + gold + " gold"; },
+};
+
 
 function drawTileGrid() {
     ctx.lineWidth = 1;
@@ -232,7 +240,7 @@ function checkForGoal() {
         movesLeft = maxMoves;
         points += PointsPerGoal;
         gold += 10;
-        document.getElementById("Gold").innerText = "You have " + gold + " gold";
+        domUpdaters.updateGold();
         let myArray = findAllOpenTiles();
         let rand = myArray[Math.floor(Math.random() * myArray.length)];
         enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
@@ -250,7 +258,7 @@ function checkForGoal() {
             goalTile.X = numberOfTilesX_axis - 1;
             goalTile.Y = numberOfTilesY_axis - 1;
         }
-        document.getElementById("Points").innerText = "You have " + points + " points";
+        domUpdaters.updatePoints();
     }
 }
 
@@ -320,7 +328,7 @@ function checkIfPlayerTriesToMoveOntoEnemy() {
         if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
             alert("you moved onto an enemy. You lose all " + points + " points!");
             points = 0;
-            document.getElementById("Points").innerText = "You have " + points + " points";
+            domUpdaters.updatePoints();
         }
     }
 }
@@ -329,7 +337,7 @@ function checkIfPlayerTriesToMoveOntoGold() {
     for (var i = 0; i < goldArr.length; i++) {
         if (player.X === goldArr[i].X && player.Y === goldArr[i].Y) {
             gold += goldArr[i].amount;
-            document.getElementById("Gold").innerText = "You have " + gold + " gold";
+            domUpdaters.updateGold();
             removeGoldFromArray(goldArr[i].ID)
         }
     }
@@ -416,22 +424,26 @@ function animateEnemys(enemy) {
 
 function updateMovesAndCheckDestination() {
     movesLeft -= 1;
+    //add a check if player is out of moves function
     if (movesLeft < 0) {
         alert("You are out of moves! You lose! Final score: " + points);
         points = 0;
+        console.log(points);
+        domUpdaters.updatePoints();
+        console.log(points);
     }
     checkIfPlayerTriesToMoveOntoEnemy();
     checkForGoal();
     checkIfPlayerTriesToMoveOntoGold();
-    document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
+    domUpdaters.updateMoves();
 }
 
 function BuyExtraMoves() {
     if (gold >= shopPrices.extraMoves) {
         gold -= shopPrices.extraMoves;
-        document.getElementById("Gold").innerText = "You have " + gold + " gold";
+        domUpdaters.updateGold();
         maxMoves += 2;
-        document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
+        domUpdaters.updateMoves();
     } else {
         shopPrices.alertNotEnoughGold(shopPrices.extraMoves);
     }
@@ -440,9 +452,9 @@ function BuyExtraMoves() {
 function BuyPointsPerGoal() {
     if (gold >= shopPrices.extraPoints) {
         gold -= shopPrices.extraPoints;
-        document.getElementById("Gold").innerText = "You have " + gold + " gold";
+        domUpdaters.updateGold();
         PointsPerGoal += 1;
-        document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal;
+        domUpdaters.updatePointsPerGoal();
     } else {
         shopPrices.alertNotEnoughGold(shopPrices.extraPoints);
     }
@@ -452,7 +464,7 @@ function Bomb() {
     var bombColor = "pink";
     if (gold >= shopPrices.bomb) {
         gold -= shopPrices.bomb;
-        document.getElementById("Gold").innerText = "You have " + gold + " gold";
+        domUpdaters.updateGold();
         //Explode the bomb
         enemyArr = enemyArr.filter(function(enemy) {
             return (Math.abs(player.X - enemy.X) > 1) || (Math.abs(player.Y - enemy.Y) > 1);
