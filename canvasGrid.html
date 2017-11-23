@@ -144,7 +144,7 @@ function Enemy(x, y, id) {
     this.moveEnemy = function() {
         var possibleMoves = [];
         //check left
-        if (checkIfTileHasPieceOnIt(this.X - 1, this.Y) && this.X - 1 >= 0) {
+        if (checks.checkIfTileHasPieceOnIt(this.X - 1, this.Y) && this.X - 1 >= 0) {
             possibleMoves.push({
                 X: this.X - 1,
                 Y: this.Y,
@@ -152,7 +152,7 @@ function Enemy(x, y, id) {
             });
         }
         //check right
-        if (checkIfTileHasPieceOnIt(this.X + 1, this.Y) && this.X + 1 <= numberOfTilesX_axis - 1) {
+        if (checks.checkIfTileHasPieceOnIt(this.X + 1, this.Y) && this.X + 1 <= numberOfTilesX_axis - 1) {
             possibleMoves.push({
                 X: this.X + 1,
                 Y: this.Y,
@@ -160,7 +160,7 @@ function Enemy(x, y, id) {
             });
         }
         //check above
-        if (checkIfTileHasPieceOnIt(this.X, this.Y - 1) && this.Y - 1 >= 0) {
+        if (checks.checkIfTileHasPieceOnIt(this.X, this.Y - 1) && this.Y - 1 >= 0) {
             possibleMoves.push({
                 X: this.X,
                 Y: this.Y - 1,
@@ -168,7 +168,7 @@ function Enemy(x, y, id) {
             });
         }
         //check below
-        if (checkIfTileHasPieceOnIt(this.X, this.Y + 1) && this.Y + 1 <= numberOfTilesY_axis - 1) {
+        if (checks.checkIfTileHasPieceOnIt(this.X, this.Y + 1) && this.Y + 1 <= numberOfTilesY_axis - 1) {
             possibleMoves.push({
                 X: this.X,
                 Y: this.Y + 1,
@@ -235,33 +235,6 @@ function drawGoalTile(X, Y) {
     ctx.stroke();
 }
 
-function checkForGoal() {
-    if (player.X == goalTile.X && player.Y == goalTile.Y) {
-        movesLeft = maxMoves;
-        points += PointsPerGoal;
-        gold += 10;
-        domUpdaters.updateGold();
-        let myArray = findAllOpenTiles();
-        let rand = myArray[Math.floor(Math.random() * myArray.length)];
-        enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
-        enemyIDtracker += 1;
-
-        myArray = findAllOpenTiles();
-        rand = myArray[Math.floor(Math.random() * myArray.length)];
-        goldArr.push(new Gold(rand.X, rand.Y, enemyIDtracker));
-        goldIDtracker += 1;
-
-        if ((goalTile.X == numberOfTilesX_axis - 1) && (goalTile.Y == numberOfTilesY_axis - 1)) {
-            goalTile.X = 0;
-            goalTile.Y = 0;
-        } else if ((goalTile.X == 0) && (goalTile.Y == 0)) {
-            goalTile.X = numberOfTilesX_axis - 1;
-            goalTile.Y = numberOfTilesY_axis - 1;
-        }
-        domUpdaters.updatePoints();
-    }
-}
-
 function Tile(x, y) {
     this.X = x;
     this.Y = y;
@@ -272,7 +245,7 @@ function findAllOpenTiles() {
     var tempOpenTiles = [];
     for (var x = 0; x < numberOfTilesX_axis; x++) {
         for (var y = 0; y < numberOfTilesY_axis; y++) {
-            if (checkIfTileHasPieceOnIt(x, y)) {
+            if (checks.checkIfTileHasPieceOnIt(x, y)) {
                 //colorTile(x,y,"blue");
                 //instead of coloring tiles push available tiles to an array, then randomly choose a tile to add a piece to.
                 tempOpenTiles.push(new Tile(x, y));
@@ -280,37 +253,6 @@ function findAllOpenTiles() {
         }
     }
     return tempOpenTiles;
-}
-
-function checkIfTileHasPieceOnIt(x, y) {
-
-    //break this into smaller functions Check if tile has enemy on it. check if tile has player one it. check if tile has gold on it etc.
-    for (var i = 0; i < enemyArr.length; i++) {
-        if (enemyArr[i].X === x && enemyArr[i].Y === y) {
-            return false
-        }
-    }
-
-    for (var i = 0; i < goldArr.length; i++) {
-        if (goldArr[i].X === x && goldArr[i].Y === y) {
-            return false
-        }
-    }
-
-    //just do a for loop through all game pieces
-    if (player.X === x && player.Y === y) {
-        return false
-    }
-    if (numberOfTilesX_axis - 1 === x && numberOfTilesY_axis - 1 === y) {
-        return false
-    }
-    if (0 === x && 0 === y) {
-        return false
-    }
-    //also check if it is other goalTile (make BOTH goal tiles off limit)
-    else {
-        return true;
-    }
 }
 
 function colorTile(x, y, color) {
@@ -323,25 +265,95 @@ function colorTile(x, y, color) {
     ctx.stroke();
 }
 
-function checkIfPlayerTriesToMoveOntoEnemy() {
-    for (var i = 0; i < enemyArr.length; i++) {
-        if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
-            alert("you moved onto an enemy. You lose all " + points + " points!");
+var checks = {
+
+    checkIfPlayerTriesToMoveOntoEnemy: function() {
+        for (var i = 0; i < enemyArr.length; i++) {
+            if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
+                alert("you moved onto an enemy. You lose all " + points + " points!");
+                points = 0;
+                domUpdaters.updatePoints();
+            }
+        }
+    },
+
+    checkIfPlayerTriesToMoveOntoGold: function() {
+        for (var i = 0; i < goldArr.length; i++) {
+            if (player.X === goldArr[i].X && player.Y === goldArr[i].Y) {
+                gold += goldArr[i].amount;
+                domUpdaters.updateGold();
+                removeGoldFromArray(goldArr[i].ID)
+            }
+        }
+    },
+
+    checkIfPlayerIsOutOfMoves: function()
+    {
+        if (movesLeft < 0) {
+            alert("You are out of moves! You lose! Final score: " + points);
             points = 0;
             domUpdaters.updatePoints();
         }
-    }
-}
+    },
 
-function checkIfPlayerTriesToMoveOntoGold() {
-    for (var i = 0; i < goldArr.length; i++) {
-        if (player.X === goldArr[i].X && player.Y === goldArr[i].Y) {
-            gold += goldArr[i].amount;
+    checkForGoal: function() {
+        if (player.X == goalTile.X && player.Y == goalTile.Y) {
+            movesLeft = maxMoves;
+            points += PointsPerGoal;
+            gold += 10;
             domUpdaters.updateGold();
-            removeGoldFromArray(goldArr[i].ID)
+            let myArray = findAllOpenTiles();
+            let rand = myArray[Math.floor(Math.random() * myArray.length)];
+            enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
+            enemyIDtracker += 1;
+
+            myArray = findAllOpenTiles();
+            rand = myArray[Math.floor(Math.random() * myArray.length)];
+            goldArr.push(new Gold(rand.X, rand.Y, enemyIDtracker));
+            goldIDtracker += 1;
+
+            if ((goalTile.X == numberOfTilesX_axis - 1) && (goalTile.Y == numberOfTilesY_axis - 1)) {
+                goalTile.X = 0;
+                goalTile.Y = 0;
+            } else if ((goalTile.X == 0) && (goalTile.Y == 0)) {
+                goalTile.X = numberOfTilesX_axis - 1;
+                goalTile.Y = numberOfTilesY_axis - 1;
+            }
+            domUpdaters.updatePoints();
         }
-    }
-}
+    },
+
+    checkIfTileHasPieceOnIt: function(x, y) {
+        //break this into smaller functions Check if tile has enemy on it. check if tile has player one it. check if tile has gold on it etc.
+        for (var i = 0; i < enemyArr.length; i++) {
+            if (enemyArr[i].X === x && enemyArr[i].Y === y) {
+                return false
+            }
+        }
+
+        for (var i = 0; i < goldArr.length; i++) {
+            if (goldArr[i].X === x && goldArr[i].Y === y) {
+                return false
+            }
+        }
+
+        //just do a for loop through all game pieces
+        if (player.X === x && player.Y === y) {
+            return false
+        }
+        if (numberOfTilesX_axis - 1 === x && numberOfTilesY_axis - 1 === y) {
+            return false
+        }
+        if (0 === x && 0 === y) {
+            return false
+        }
+        //also check if it is other goalTile (make BOTH goal tiles off limit)
+        else {
+            return true;
+        }
+    },
+
+};
 
 function removeGoldFromArray(id) {
     var index = goldArr.map(function(g) {
@@ -424,17 +436,10 @@ function animateEnemys(enemy) {
 
 function updateMovesAndCheckDestination() {
     movesLeft -= 1;
-    //add a check if player is out of moves function
-    if (movesLeft < 0) {
-        alert("You are out of moves! You lose! Final score: " + points);
-        points = 0;
-        console.log(points);
-        domUpdaters.updatePoints();
-        console.log(points);
-    }
-    checkIfPlayerTriesToMoveOntoEnemy();
-    checkForGoal();
-    checkIfPlayerTriesToMoveOntoGold();
+    checks.checkIfPlayerIsOutOfMoves();
+    checks.checkIfPlayerTriesToMoveOntoEnemy();
+    checks.checkForGoal();
+    checks.checkIfPlayerTriesToMoveOntoGold();
     domUpdaters.updateMoves();
 }
 
