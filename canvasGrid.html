@@ -66,6 +66,8 @@ var shopPrices = {
     extraPoints: 25,
     extraMoves: 40,
     bomb: 100,
+
+    alertNotEnoughGold: function(price) { alert("This costs " + price + " gold! You don't have enough") },
 };
 
 
@@ -426,15 +428,12 @@ function updateMovesAndCheckDestination() {
 
 function BuyExtraMoves() {
     if (gold >= shopPrices.extraMoves) {
-        console.log("first", maxMoves);
         gold -= shopPrices.extraMoves;
-        console.log("second",maxMoves);
         document.getElementById("Gold").innerText = "You have " + gold + " gold";
         maxMoves += 2;
-        console.log("third",maxMoves);
         document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
     } else {
-        alert("This costs " + shopPrices.extraMoves + " gold! You don't have enough");
+        shopPrices.alertNotEnoughGold(shopPrices.extraMoves);
     }
 }
 
@@ -445,7 +444,7 @@ function BuyPointsPerGoal() {
         PointsPerGoal += 1;
         document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal;
     } else {
-        alert("This costs " + shopPrices.extraPoints + " gold! You don't have enough");
+        shopPrices.alertNotEnoughGold(shopPrices.extraPoints);
     }
 }
 
@@ -468,7 +467,7 @@ function Bomb() {
         colorTile(player.X + 1, player.Y - 1, bombColor);
         colorTile(player.X - 1, player.Y + 1, bombColor);
     } else {
-        alert("This costs " + shopPrices.bomb + " gold! You don't have enough");
+        shopPrices.alertNotEnoughGold(shopPrices.bomb);
     }
 }
 
