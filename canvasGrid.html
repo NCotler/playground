@@ -369,9 +369,11 @@ function reDrawCanvas() {
     //draw board
     drawTileGrid();
     drawGoalTile(goalTile.X, goalTile.Y);
-    for (var i = 0; i < goldArr.length; i++) {
-        goldArr[i].drawGold(goldArr[i].X, goldArr[i].Y);
-    }
+    //draw gold
+    goldArr.forEach(function(element) { element.drawGold(); });
+    // for (var i = 0; i < goldArr.length; i++) {
+    //     goldArr[i].drawGold(goldArr[i].X, goldArr[i].Y);
+    // }
     //draw pieces: player and enemys
     drawPlayer(player.pixelX, player.pixelY);
 
@@ -426,7 +428,7 @@ function animateEnemys(enemy) {
 
     reDrawCanvas();
 
-    if (enemyArr.length > 0) //come up with a better check for when enemy finishes animations
+    if (enemyArr.length > 0) //come up with a better check for when enemy finishes animations. Is this a problem with canvas sizes not divisible by 5?
     {
         if (tileToPixelCenter[enemyArr[0].X] !== enemyArr[0].pixelX || tileToPixelCenter[enemyArr[0].Y] !== enemyArr[0].pixelY) {
             requestAnimationFrame(animateEnemys);
