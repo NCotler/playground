@@ -25,11 +25,11 @@
         <p id="PointsPerGoal">Points Per Goal is 1</p>
         <p id="Moves">18/18 moves remain</p>
         <p id="Gold"></p>
-        <button type="button" onclick=BuyPointsPerGoal()>Buy Points Per Goal (25g)</button>
+        <button type="button" onclick=BuyPointsPerGoal() id="PPG"></button>
         <br><br>
-        <button type="button" onclick=BuyExtraMoves()>Buy Extra Moves (40g)</button>
+        <button type="button" onclick=BuyExtraMoves() id="ExtraMoves"></button>
         <br><br>
-        <button type="button" onclick=Bomb()>Use A Bomb (100g)</button>
+        <button type="button" onclick=Bomb() id="Bomb"></button>
       </div>
 </body>
 <script>
@@ -76,6 +76,9 @@ var domUpdaters =
     updatePointsPerGoal: function() { document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal; },
     updateMoves: function() { document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain"; },
     updateGold: function() { document.getElementById("Gold").innerText = "You have " + gold + " gold"; },
+    updatePpgButton: function() { document.getElementById("PPG").innerText = "Buy Points Per Goal  (" + shopPrices.extraPoints + "g)"; },
+    updateExtraMovesButton: function() { document.getElementById("ExtraMoves").innerText = "Buy ExtraMoves  (" + shopPrices.extraMoves + "g)"; },
+    updateBombButton: function() { document.getElementById("Bomb").innerText = "Use A Bomb  (" + shopPrices.bomb + "g)"; },
 };
 
 
@@ -500,6 +503,14 @@ function movePlayerThenMoveEnemy()
                 animateEnemys();
 }
 
+function initButtonText()
+{
+    domUpdaters.updateBombButton();
+    domUpdaters.updatePpgButton();
+    domUpdaters.updateExtraMovesButton();
+}
+
+initButtonText();
 drawTileGrid();
 drawGoalTile(goalTile.X, goalTile.Y);
 drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
