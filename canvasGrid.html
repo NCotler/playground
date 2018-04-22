@@ -11,6 +11,45 @@
         vertical-align: top;
       }
 
+      .modal{
+        display:none;
+        position: fixed;
+        z-index: 1;
+        left:0;
+        top:0;
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+        background-color: rgba(164,34,23,0.7);
+      }
+
+      .modal-content{
+        background-color: #f4f4f4;
+        margin: 30% auto;
+        padding: 20px;
+        width: 70%;
+        box-shadow: 0 5px 8px 0 rgba(0,0,0,0.4), 0 7px 40px 0 rgba(0,0,0,0.4);
+        animation-name:modalopen;
+        animation-duration:1s;
+      }
+
+      .closeBtn{
+        color: rgb(123,123,123);
+        float: right;
+        font-size:50px;
+      }
+
+      .closeBtn:hover,.closeBtn:focus{
+        color: #000;
+        text-decoration: nono;
+        cursor:pointer;
+      }
+
+      @keyframes modalopen{
+        from{opacity: 0}
+        to{opacity: 1}
+      }
+
     </style>
 </head>
 
@@ -30,9 +69,45 @@
         <button type="button" onclick=BuyExtraMoves() id="ExtraMoves"></button>
         <br><br>
         <button type="button" onclick=Bomb() id="Bomb"></button>
-      </div>
-</body>
-<script>
+    </div>
+
+    <button id="modalBtn" class="button">Click Here</button>
+
+    <div id="simpleModal" class="modal">
+        <div class="modal-content">
+            <span class="closeBtn">&times;</span>
+            <p>Hello, ima modal!</p>
+        </div>
+    </div>
+
+      <script>
+var modal = document.getElementById("simpleModal");
+var modalBtn = document.getElementById("modalBtn");
+var closeBtn = document.getElementsByClassName("closeBtn")[0];
+
+modalBtn.addEventListener("click", openModal);
+closeBtn.addEventListener("click", closeModal);
+window.addEventListener("click", clickOutsideModal);
+
+
+function openModal()
+{
+    modal.style.display = "block";
+}
+
+function closeModal()
+{
+    modal.style.display = "none";
+}
+
+function clickOutsideModal(e)
+{
+    if(e.target == modal)
+    {
+        modal.style.display = "none";
+    }
+}
+
 //TODO: convert all == to ===
 //be consistent about x vs X (x is paramenter and temp wheras X is property of object)
 var c = document.getElementById("myCanvas");
@@ -577,5 +652,5 @@ document.addEventListener('keydown', function(event) {
 
 //todo: high score list on the side, so participants can log in and keep their score
 </script>
-
+</body>
 </html>
