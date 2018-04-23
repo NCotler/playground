@@ -6,651 +6,670 @@
     <meta name="viewport" content="width=device-width">
     <title>GridMove</title>
     <style>
-
-      div#TextDiv {
-        vertical-align: top;
-      }
-
-      .modal{
-        display:none;
-        position: fixed;
-        z-index: 1;
-        left:0;
-        top:0;
-        height: 100%;
-        width: 100%;
-        overflow: auto;
-        background-color: rgba(164,34,23,0.7);
-      }
-
-      .modal-content{
-        background-color: #f4f4f4;
-        margin: 30% auto;
-        padding: 20px;
-        width: 70%;
-        box-shadow: 0 5px 8px 0 rgba(0,0,0,0.4), 0 7px 40px 0 rgba(0,0,0,0.4);
-        animation-name:modalopen;
-        animation-duration:1s;
-      }
-
-      .closeBtn{
-        color: rgb(123,123,123);
-        float: right;
-        font-size:50px;
-      }
-
-      .closeBtn:hover,.closeBtn:focus{
-        color: #000;
-        text-decoration: nono;
-        cursor:pointer;
-      }
-
-      @keyframes modalopen{
-        from{opacity: 0}
-        to{opacity: 1}
-      }
-
+        div#TextDiv {
+            vertical-align: top;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            overflow: auto;
+            background-color: rgba(164, 34, 23, 0.7);
+        }
+        
+        .modal-content {
+            background-color: #f4f4f4;
+            margin: 30% auto;
+            padding: 20px;
+            width: 70%;
+            box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.4), 0 7px 40px 0 rgba(0, 0, 0, 0.4);
+            animation-name: modalopen;
+            animation-duration: 1s;
+        }
+        
+        .closeBtn {
+            color: rgb(123, 123, 123);
+            float: right;
+            font-size: 50px;
+        }
+        
+        .closeBtn:hover,
+        .closeBtn:focus {
+            color: #000;
+            text-decoration: nono;
+            cursor: pointer;
+        }
+        
+        @keyframes modalopen {
+            from {
+                opacity: 0
+            }
+            to {
+                opacity: 1
+            }
+        }
     </style>
 </head>
 
 <body>
-  <div style="display: inline-block">
-    <canvas id="myCanvas" width="600" height="600" style="border:10px solid #000000;"></canvas>
-  </div>
-  <div style="display: inline-block" id="TextDiv">
-        <p>Use arrow keys to move.</p> 
+    <div style="display: inline-block">
+        <canvas id="myCanvas" width="600" height="600" style="border:10px solid #000000;"></canvas>
+    </div>
+    <div style="display: inline-block" id="TextDiv">
+        <p>Use arrow keys to move.</p>
         <p>Move to the green tile.</p>
         <p id="Points">You have 0 points</p>
         <p id="PointsPerGoal">Points Per Goal is 1</p>
         <p id="Moves">18/18 moves remain</p>
         <p id="Gold"></p>
         <button type="button" onclick=BuyPointsPerGoal() id="PPG"></button>
-        <br><br>
+        <br>
+        <br>
         <button type="button" onclick=BuyExtraMoves() id="ExtraMoves"></button>
-        <br><br>
+        <br>
+        <br>
         <button type="button" onclick=Bomb() id="Bomb"></button>
+        <br>
+        <br>
+        <button id="modalBtn" class="button">End Game and Submit Score</button>
     </div>
-
-    <button id="modalBtn" class="button">Click Here</button>
 
     <div id="simpleModal" class="modal">
         <div class="modal-content">
             <span class="closeBtn">&times;</span>
-            <p>Hello, ima modal!</p>
+            <form action="http://noahcotler.com/InsertHighScore.php" method="GET">
+                Name :
+                <input type="text" name="n" />
+                <input id="user-score" type="hidden" name="i" />
+            </form>
         </div>
     </div>
 
-      <script>
-var modal = document.getElementById("simpleModal");
-var modalBtn = document.getElementById("modalBtn");
-var closeBtn = document.getElementsByClassName("closeBtn")[0];
+    <script>
+        var modal = document.getElementById("simpleModal");
+        var modalBtn = document.getElementById("modalBtn");
+        var closeBtn = document.getElementsByClassName("closeBtn")[0];
 
-modalBtn.addEventListener("click", openModal);
-closeBtn.addEventListener("click", closeModal);
-window.addEventListener("click", clickOutsideModal);
+        modalBtn.addEventListener("click", openModal);
+        closeBtn.addEventListener("click", closeModal);
+        window.addEventListener("click", clickOutsideModal);
 
-
-function openModal()
-{
-    modal.style.display = "block";
-}
-
-function closeModal()
-{
-    modal.style.display = "none";
-}
-
-function clickOutsideModal(e)
-{
-    if(e.target == modal)
-    {
-        modal.style.display = "none";
-    }
-}
-
-//TODO: convert all == to ===
-//be consistent about x vs X (x is paramenter and temp wheras X is property of object)
-var c = document.getElementById("myCanvas");
-var ctx = c.getContext("2d");
-
-var width = c.width;
-var height = c.height;
-
-var numberOfTilesX_axis = 10;
-var numberOfTilesY_axis = numberOfTilesX_axis;
-
-//distance calculation
-var centerOfTileToSideOfTile = (width / (numberOfTilesX_axis * 2));
-var centerOfTileToTopOfTile = (width / (numberOfTilesX_axis * 2));
-
-//pixel location finder
-var tileToPixelCenter = [];
-
-//game data
-var points = 0;
-var gold = 0;
-var enemyIDtracker = 0;
-var enemyArr = [];
-var goldIDtracker = 0;
-var goldArr = [];
-var maxMoves = 18;
-var movesLeft = 18;
-var PointsPerGoal = 1;
-
-var shopPrices = {
-    extraPoints: 25,
-    extraMoves: 40,
-    bomb: 50,
-
-    alertNotEnoughGold: function(price) { alert("This costs " + price + " gold! You don't have enough") },
-};
-
-var domUpdaters = 
-{
-    updatePoints: function() { document.getElementById("Points").innerText = "You have " + points + " points"; },
-    updatePointsPerGoal: function() { document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal; },
-    updateMoves: function() { document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain"; },
-    updateGold: function() { document.getElementById("Gold").innerText = "You have " + gold + " gold"; },
-    updatePpgButton: function() { document.getElementById("PPG").innerText = "Buy Points Per Goal  (" + shopPrices.extraPoints + "g)"; },
-    updateExtraMovesButton: function() { document.getElementById("ExtraMoves").innerText = "Buy ExtraMoves  (" + shopPrices.extraMoves + "g)"; },
-    updateBombButton: function() { document.getElementById("Bomb").innerText = "Use A Bomb  (" + shopPrices.bomb + "g)"; },
-};
-
-
-function drawTileGrid() {
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#000000';
-    for (var i = 1; i < numberOfTilesX_axis; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * (centerOfTileToSideOfTile * 2), 0);
-        ctx.lineTo(i * (centerOfTileToSideOfTile * 2), height);
-        ctx.stroke();
-    }
-
-    for (var i = 1; i < numberOfTilesY_axis; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, i * (centerOfTileToTopOfTile * 2));
-        ctx.lineTo(width, i * (centerOfTileToTopOfTile * 2));
-        ctx.stroke();
-    }
-}
-
-//create array for getting pixel center points of tiles
-//e.g. tileToPixelCenter[2] is center of 2nd tile
-(function getPixelCenterPointsOfTiles() {
-    for (var i = 1; i <= numberOfTilesY_axis; i++) {
-        tileToPixelCenter.push((i * (width / (numberOfTilesX_axis))) - (width / (numberOfTilesX_axis * 2)));
-    }
-})();
-
-
-var player = {
-    radius: (centerOfTileToSideOfTile) - (width / 120),
-    //X, Y, X, and Y are tile positions; not pixel positions
-    X: 0,
-    Y: 0,
-    pixelX: tileToPixelCenter[0],
-    pixelY: tileToPixelCenter[0],
-};
-
-var goalTile = {
-    X: numberOfTilesX_axis - 1,
-    Y: numberOfTilesY_axis - 1,
-}
-
-//constructor for Enemy piece
-function Enemy(x, y, id) {
-    this.ID = id;
-    this.X = x;
-    this.Y = y;
-    this.pixelX = tileToPixelCenter[x];
-    this.pixelY = tileToPixelCenter[y];
-    this.radius = (centerOfTileToSideOfTile) - (width / 120);
-
-    this.drawEnemy = function() {
-        //create generalized function for drawing player and enemys
-        //x and y are pixels and not tiles
-        ctx.beginPath();
-        ctx.arc(this.pixelX, this.pixelY, this.radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'red';
-        ctx.fill();
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'gray';
-        ctx.stroke();
-    }
-
-    this.moveEnemy = function() {
-        var possibleMoves = [];
-        //check left
-        if (checks.checkIfTileHasPieceOnIt(this.X - 1, this.Y) && this.X - 1 >= 0) {
-            possibleMoves.push({
-                X: this.X - 1,
-                Y: this.Y,
-                whichWay: "left"
-            });
-        }
-        //check right
-        if (checks.checkIfTileHasPieceOnIt(this.X + 1, this.Y) && this.X + 1 <= numberOfTilesX_axis - 1) {
-            possibleMoves.push({
-                X: this.X + 1,
-                Y: this.Y,
-                whichWay: "right"
-            });
-        }
-        //check above
-        if (checks.checkIfTileHasPieceOnIt(this.X, this.Y - 1) && this.Y - 1 >= 0) {
-            possibleMoves.push({
-                X: this.X,
-                Y: this.Y - 1,
-                whichWay: "above"
-            });
-        }
-        //check below
-        if (checks.checkIfTileHasPieceOnIt(this.X, this.Y + 1) && this.Y + 1 <= numberOfTilesY_axis - 1) {
-            possibleMoves.push({
-                X: this.X,
-                Y: this.Y + 1,
-                whichWay: "below"
-            });
+        function openModal() {
+            document.getElementById("user-score").value = points;
+            modal.style.display = "block";
         }
 
-        if (possibleMoves.length > 0) {
-            let rand = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-            this.pixelX = tileToPixelCenter[this.X];
-            this.pixelY = tileToPixelCenter[this.Y];
-            this.X = rand.X;
-            this.Y = rand.Y;
-            this.X = rand.X;
-            this.Y = rand.Y;
+        function closeModal() {
+            modal.style.display = "none";
         }
-    }
-}
 
-function Gold(x, y, id) {
-    this.ID = id;
-    this.X = x;
-    this.Y = y;
-    this.radius = (centerOfTileToSideOfTile) - (width / 120);
-    this.amount = Math.floor(Math.random() * 5) + 5;
-
-    this.drawGold = function() {
-        //create generalized function for drawing player and enemys
-        //x and y are pixels and not tiles
-        ctx.beginPath();
-        ctx.arc(tileToPixelCenter[this.X], tileToPixelCenter[this.Y], this.radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'yellow';
-        ctx.fill();
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'blue';
-        ctx.stroke();
-        ctx.fillStyle = 'black';
-        ctx.font = "15px Arial";
-        ctx.fillText(this.amount, tileToPixelCenter[this.X], tileToPixelCenter[this.Y]);
-    }
-
-}
-
-function drawPlayer(x, y) {
-    //create generalized function for drawing player and enemys
-    //x and y are pixels and not tiles
-    ctx.beginPath();
-    ctx.arc(x, y, player.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#BADA55';
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = '#B000B5';
-    ctx.stroke();
-}
-
-function drawGoalTile(X, Y) {
-    //use this funct? colorTile(x,y,"blue");
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#11DAFF';
-    ctx.fillStyle = "green";
-    ctx.rect(tileToPixelCenter[X] - centerOfTileToSideOfTile, tileToPixelCenter[Y] - centerOfTileToTopOfTile, centerOfTileToSideOfTile * 2, centerOfTileToTopOfTile * 2);
-    ctx.fill();
-    ctx.stroke();
-}
-
-function Tile(x, y) {
-    this.X = x;
-    this.Y = y;
-}
-
-//returns array of open tiles
-function findAllOpenTiles() {
-    var tempOpenTiles = [];
-    for (var x = 0; x < numberOfTilesX_axis; x++) {
-        for (var y = 0; y < numberOfTilesY_axis; y++) {
-            if (checks.checkIfTileHasPieceOnIt(x, y)) {
-                //colorTile(x,y,"blue");
-                //instead of coloring tiles push available tiles to an array, then randomly choose a tile to add a piece to.
-                tempOpenTiles.push(new Tile(x, y));
-            }
-        }
-    }
-    return tempOpenTiles;
-}
-
-function colorTile(x, y, color) {
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "yellow";
-    ctx.fillStyle = color;
-    ctx.rect(tileToPixelCenter[x] - centerOfTileToSideOfTile, tileToPixelCenter[y] - centerOfTileToTopOfTile, centerOfTileToSideOfTile * 2, centerOfTileToTopOfTile * 2);
-    ctx.fill();
-    ctx.stroke();
-}
-
-var checks = {
-
-    checkIfPlayerTriesToMoveOntoEnemy: function() {
-        for (var i = 0; i < enemyArr.length; i++) {
-            if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
-                alert("you moved onto an enemy. You lose all " + points + " points!");
-                points = 0;
-                domUpdaters.updatePoints();
-            }
-        }
-    },
-
-    checkIfPlayerTriesToMoveOntoGold: function() {
-        for (var i = 0; i < goldArr.length; i++) {
-            if (player.X === goldArr[i].X && player.Y === goldArr[i].Y) {
-                gold += goldArr[i].amount;
-                domUpdaters.updateGold();
-                removeGoldFromArray(goldArr[i].ID)
-            }
-        }
-    },
-
-    checkIfPlayerIsOutOfMoves: function()
-    {
-        if (movesLeft < 0) {
-            alert("You are out of moves! You lose! Final score: " + points);
-            points = 0;
-            domUpdaters.updatePoints();
-        }
-    },
-
-    checkForGoal: function() {
-        if (player.X == goalTile.X && player.Y == goalTile.Y) {
-            movesLeft = maxMoves;
-            points += PointsPerGoal;
-            gold += 10;
-            domUpdaters.updateGold();
-            let myArray = findAllOpenTiles();
-            let rand = myArray[Math.floor(Math.random() * myArray.length)];
-            enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
-            enemyIDtracker += 1;
-
-            myArray = findAllOpenTiles();
-            rand = myArray[Math.floor(Math.random() * myArray.length)];
-            goldArr.push(new Gold(rand.X, rand.Y, enemyIDtracker));
-            goldIDtracker += 1;
-
-            if ((goalTile.X == numberOfTilesX_axis - 1) && (goalTile.Y == numberOfTilesY_axis - 1)) {
-                goalTile.X = 0;
-                goalTile.Y = 0;
-            } else if ((goalTile.X == 0) && (goalTile.Y == 0)) {
-                goalTile.X = numberOfTilesX_axis - 1;
-                goalTile.Y = numberOfTilesY_axis - 1;
-            }
-            domUpdaters.updatePoints();
-        }
-    },
-
-    checkIfTileHasPieceOnIt: function(x, y) {
-        //break this into smaller functions Check if tile has enemy on it. check if tile has player one it. check if tile has gold on it etc.
-        for (var i = 0; i < enemyArr.length; i++) {
-            if (enemyArr[i].X === x && enemyArr[i].Y === y) {
-                return false
+        function clickOutsideModal(e) {
+            if (e.target == modal) {
+                modal.style.display = "none";
             }
         }
 
-        for (var i = 0; i < goldArr.length; i++) {
-            if (goldArr[i].X === x && goldArr[i].Y === y) {
-                return false
+        //TODO: convert all == to ===
+        //be consistent about x vs X (x is paramenter and temp wheras X is property of object)
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+
+        var width = c.width;
+        var height = c.height;
+
+        var numberOfTilesX_axis = 10;
+        var numberOfTilesY_axis = numberOfTilesX_axis;
+
+        //distance calculation
+        var centerOfTileToSideOfTile = (width / (numberOfTilesX_axis * 2));
+        var centerOfTileToTopOfTile = (width / (numberOfTilesX_axis * 2));
+
+        //pixel location finder
+        var tileToPixelCenter = [];
+
+        //game data
+        var points = 0;
+        var gold = 0;
+        var enemyIDtracker = 0;
+        var enemyArr = [];
+        var goldIDtracker = 0;
+        var goldArr = [];
+        var maxMoves = 18;
+        var movesLeft = 18;
+        var PointsPerGoal = 1;
+
+        var shopPrices = {
+            extraPoints: 25,
+            extraMoves: 40,
+            bomb: 50,
+
+            alertNotEnoughGold: function(price) {
+                alert("This costs " + price + " gold! You don't have enough")
+            },
+        };
+
+        var domUpdaters = {
+            updatePoints: function() {
+                document.getElementById("Points").innerText = "You have " + points + " points";
+            },
+            updatePointsPerGoal: function() {
+                document.getElementById("PointsPerGoal").innerText = "Points Per Goal: " + PointsPerGoal;
+            },
+            updateMoves: function() {
+                document.getElementById("Moves").innerText = movesLeft + "/" + maxMoves + " moves remain";
+            },
+            updateGold: function() {
+                document.getElementById("Gold").innerText = "You have " + gold + " gold";
+            },
+            updatePpgButton: function() {
+                document.getElementById("PPG").innerText = "Buy Points Per Goal  (" + shopPrices.extraPoints + "g)";
+            },
+            updateExtraMovesButton: function() {
+                document.getElementById("ExtraMoves").innerText = "Buy ExtraMoves  (" + shopPrices.extraMoves + "g)";
+            },
+            updateBombButton: function() {
+                document.getElementById("Bomb").innerText = "Use A Bomb  (" + shopPrices.bomb + "g)";
+            },
+        };
+
+        function drawTileGrid() {
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#000000';
+            for (var i = 1; i < numberOfTilesX_axis; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * (centerOfTileToSideOfTile * 2), 0);
+                ctx.lineTo(i * (centerOfTileToSideOfTile * 2), height);
+                ctx.stroke();
+            }
+
+            for (var i = 1; i < numberOfTilesY_axis; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * (centerOfTileToTopOfTile * 2));
+                ctx.lineTo(width, i * (centerOfTileToTopOfTile * 2));
+                ctx.stroke();
             }
         }
 
-        //just do a for loop through all game pieces
-        if (player.X === x && player.Y === y) {
-            return false
+        //create array for getting pixel center points of tiles
+        //e.g. tileToPixelCenter[2] is center of 2nd tile
+        (function getPixelCenterPointsOfTiles() {
+            for (var i = 1; i <= numberOfTilesY_axis; i++) {
+                tileToPixelCenter.push((i * (width / (numberOfTilesX_axis))) - (width / (numberOfTilesX_axis * 2)));
+            }
+        })();
+
+        var player = {
+            radius: (centerOfTileToSideOfTile) - (width / 120),
+            //X, Y, X, and Y are tile positions; not pixel positions
+            X: 0,
+            Y: 0,
+            pixelX: tileToPixelCenter[0],
+            pixelY: tileToPixelCenter[0],
+        };
+
+        var goalTile = {
+            X: numberOfTilesX_axis - 1,
+            Y: numberOfTilesY_axis - 1,
         }
-        if (numberOfTilesX_axis - 1 === x && numberOfTilesY_axis - 1 === y) {
-            return false
-        }
-        if (0 === x && 0 === y) {
-            return false
-        }
-        //also check if it is other goalTile (make BOTH goal tiles off limit)
-        else {
-            return true;
-        }
-    },
 
-};
+        //constructor for Enemy piece
+        function Enemy(x, y, id) {
+            this.ID = id;
+            this.X = x;
+            this.Y = y;
+            this.pixelX = tileToPixelCenter[x];
+            this.pixelY = tileToPixelCenter[y];
+            this.radius = (centerOfTileToSideOfTile) - (width / 120);
 
-function removeGoldFromArray(id) {
-    var index = goldArr.map(function(g) {
-        return g.ID;
-    }).indexOf(id);
-    if (index > -1) {
-        goldArr.splice(index, 1);
-    }
-}
+            this.drawEnemy = function() {
+                //create generalized function for drawing player and enemys
+                //x and y are pixels and not tiles
+                ctx.beginPath();
+                ctx.arc(this.pixelX, this.pixelY, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'gray';
+                ctx.stroke();
+            }
 
-function reDrawCanvas() {
-    ctx.clearRect(0, 0, width, height);
-    //draw board
-    drawTileGrid();
-    drawGoalTile(goalTile.X, goalTile.Y);
-    //draw gold
-    goldArr.forEach(function(element) { element.drawGold(); });
-    // for (var i = 0; i < goldArr.length; i++) {
-    //     goldArr[i].drawGold(goldArr[i].X, goldArr[i].Y);
-    // }
-    //draw pieces: player and enemys
-    drawPlayer(player.pixelX, player.pixelY);
-
-    // for(var i = 0; i < enemyArr.length; i++)
-    // {
-    //   enemyArr[i].moveEnemy();
-    // }
-    for (var i = 0; i < enemyArr.length; i++) {
-        enemyArr[i].drawEnemy(enemyArr[i].pixelX, enemyArr[i].pixelY);
-    }
-
-}
-
-function animatePlayer() {
-    if (tileToPixelCenter[player.X] < player.pixelX) {
-        player.pixelX -= 5;
-        reDrawCanvas();
-    }
-    if (tileToPixelCenter[player.X] > player.pixelX) {
-        player.pixelX += 5;
-        reDrawCanvas();
-    }
-    if (tileToPixelCenter[player.Y] < player.pixelY) {
-        player.pixelY -= 5;
-        reDrawCanvas();
-    }
-    if (tileToPixelCenter[player.Y] > player.pixelY) {
-        player.pixelY += 5;
-        reDrawCanvas();
-    }
-
-    if (tileToPixelCenter[player.X] !== player.pixelX || tileToPixelCenter[player.Y] !== player.pixelY) {
-        requestAnimationFrame(animatePlayer);
-    }
-}
-
-function animateEnemys(enemy) {
-    for (var i = 0; i < enemyArr.length; i++) {
-        if (tileToPixelCenter[enemyArr[i].X] < enemyArr[i].pixelX) {
-            enemyArr[i].pixelX -= 5;
-        }
-        if (tileToPixelCenter[enemyArr[i].X] > enemyArr[i].pixelX) {
-            enemyArr[i].pixelX += 5;
-        }
-        if (tileToPixelCenter[enemyArr[i].Y] < enemyArr[i].pixelY) {
-            enemyArr[i].pixelY -= 5;
-        }
-        if (tileToPixelCenter[enemyArr[i].Y] > enemyArr[i].pixelY) {
-            enemyArr[i].pixelY += 5;
-        }
-    }
-
-    reDrawCanvas();
-
-    if (enemyArr.length > 0) //come up with a better check for when enemy finishes animations. Is this a problem with canvas sizes not divisible by 5?
-    {
-        if (tileToPixelCenter[enemyArr[0].X] !== enemyArr[0].pixelX || tileToPixelCenter[enemyArr[0].Y] !== enemyArr[0].pixelY) {
-            requestAnimationFrame(animateEnemys);
-        }
-    }
-}
-
-function updateMovesAndCheckDestination() {
-    movesLeft -= 1;
-    checks.checkIfPlayerIsOutOfMoves();
-    checks.checkIfPlayerTriesToMoveOntoEnemy();
-    checks.checkForGoal();
-    checks.checkIfPlayerTriesToMoveOntoGold();
-    domUpdaters.updateMoves();
-}
-
-function BuyExtraMoves() {
-    if (gold >= shopPrices.extraMoves) {
-        gold -= shopPrices.extraMoves;
-        domUpdaters.updateGold();
-        maxMoves += 2;
-        domUpdaters.updateMoves();
-    } else {
-        shopPrices.alertNotEnoughGold(shopPrices.extraMoves);
-    }
-}
-
-function BuyPointsPerGoal() {
-    if (gold >= shopPrices.extraPoints) {
-        gold -= shopPrices.extraPoints;
-        domUpdaters.updateGold();
-        PointsPerGoal += 1;
-        domUpdaters.updatePointsPerGoal();
-    } else {
-        shopPrices.alertNotEnoughGold(shopPrices.extraPoints);
-    }
-}
-
-function Bomb() {
-    var bombColor = "pink";
-    if (gold >= shopPrices.bomb) {
-        gold -= shopPrices.bomb;
-        domUpdaters.updateGold();
-        //Explode the bomb
-        enemyArr = enemyArr.filter(function(enemy) {
-            return (Math.abs(player.X - enemy.X) > 1) || (Math.abs(player.Y - enemy.Y) > 1);
-        });
-        colorTile(player.X - 1, player.Y, bombColor);
-        colorTile(player.X + 1, player.Y, bombColor);
-        colorTile(player.X, player.Y - 1, bombColor);
-        colorTile(player.X, player.Y + 1, bombColor);
-
-        colorTile(player.X - 1, player.Y - 1, bombColor);
-        colorTile(player.X + 1, player.Y + 1, bombColor);
-        colorTile(player.X + 1, player.Y - 1, bombColor);
-        colorTile(player.X - 1, player.Y + 1, bombColor);
-    } else {
-        shopPrices.alertNotEnoughGold(shopPrices.bomb);
-    }
-}
-
-function movePlayerThenMoveEnemy()
-{
-                updateMovesAndCheckDestination();
-                animatePlayer();
-                for (var i = 0; i < enemyArr.length; i++) {
-                    enemyArr[i].moveEnemy();
+            this.moveEnemy = function() {
+                var possibleMoves = [];
+                //check left
+                if (checks.checkIfTileHasPieceOnIt(this.X - 1, this.Y) && this.X - 1 >= 0) {
+                    possibleMoves.push({
+                        X: this.X - 1,
+                        Y: this.Y,
+                        whichWay: "left"
+                    });
                 }
-                animateEnemys();
-}
+                //check right
+                if (checks.checkIfTileHasPieceOnIt(this.X + 1, this.Y) && this.X + 1 <= numberOfTilesX_axis - 1) {
+                    possibleMoves.push({
+                        X: this.X + 1,
+                        Y: this.Y,
+                        whichWay: "right"
+                    });
+                }
+                //check above
+                if (checks.checkIfTileHasPieceOnIt(this.X, this.Y - 1) && this.Y - 1 >= 0) {
+                    possibleMoves.push({
+                        X: this.X,
+                        Y: this.Y - 1,
+                        whichWay: "above"
+                    });
+                }
+                //check below
+                if (checks.checkIfTileHasPieceOnIt(this.X, this.Y + 1) && this.Y + 1 <= numberOfTilesY_axis - 1) {
+                    possibleMoves.push({
+                        X: this.X,
+                        Y: this.Y + 1,
+                        whichWay: "below"
+                    });
+                }
 
-function initButtonText()
-{
-    domUpdaters.updateBombButton();
-    domUpdaters.updatePpgButton();
-    domUpdaters.updateExtraMovesButton();
-}
-
-initButtonText();
-drawTileGrid();
-drawGoalTile(goalTile.X, goalTile.Y);
-drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
-
-document.addEventListener('keydown', function(event) {
-    const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
-    switch (key) {
-        case "ArrowLeft":
-            if (player.X < 1) {
-                alert("out of bounds");
-            } else {
-                player.pixelX = tileToPixelCenter[player.X];
-                player.X -= 1;
-                movePlayerThenMoveEnemy();
+                if (possibleMoves.length > 0) {
+                    let rand = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                    this.pixelX = tileToPixelCenter[this.X];
+                    this.pixelY = tileToPixelCenter[this.Y];
+                    this.X = rand.X;
+                    this.Y = rand.Y;
+                    this.X = rand.X;
+                    this.Y = rand.Y;
+                }
             }
-            break;
-        case "ArrowUp":
-            if (player.Y < 1) {
-                alert("out of bounds");
-            } else {
-                player.pixelY = tileToPixelCenter[player.Y];
-                player.Y -= 1;
-                movePlayerThenMoveEnemy();
+        }
+
+        function Gold(x, y, id) {
+            this.ID = id;
+            this.X = x;
+            this.Y = y;
+            this.radius = (centerOfTileToSideOfTile) - (width / 120);
+            this.amount = Math.floor(Math.random() * 5) + 5;
+
+            this.drawGold = function() {
+                //create generalized function for drawing player and enemys
+                //x and y are pixels and not tiles
+                ctx.beginPath();
+                ctx.arc(tileToPixelCenter[this.X], tileToPixelCenter[this.Y], this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'yellow';
+                ctx.fill();
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'blue';
+                ctx.stroke();
+                ctx.fillStyle = 'black';
+                ctx.font = "15px Arial";
+                ctx.fillText(this.amount, tileToPixelCenter[this.X], tileToPixelCenter[this.Y]);
             }
-            break;
-        case "ArrowRight":
-            if (player.X >= numberOfTilesX_axis - 1) {
-                alert("out of bounds");
-            } else {
-                player.pixelX = tileToPixelCenter[player.X];
-                player.X += 1;
-                movePlayerThenMoveEnemy();
+
+        }
+
+        function drawPlayer(x, y) {
+            //create generalized function for drawing player and enemys
+            //x and y are pixels and not tiles
+            ctx.beginPath();
+            ctx.arc(x, y, player.radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = '#BADA55';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#B000B5';
+            ctx.stroke();
+        }
+
+        function drawGoalTile(X, Y) {
+            //use this funct? colorTile(x,y,"blue");
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#11DAFF';
+            ctx.fillStyle = "green";
+            ctx.rect(tileToPixelCenter[X] - centerOfTileToSideOfTile, tileToPixelCenter[Y] - centerOfTileToTopOfTile, centerOfTileToSideOfTile * 2, centerOfTileToTopOfTile * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function Tile(x, y) {
+            this.X = x;
+            this.Y = y;
+        }
+
+        //returns array of open tiles
+        function findAllOpenTiles() {
+            var tempOpenTiles = [];
+            for (var x = 0; x < numberOfTilesX_axis; x++) {
+                for (var y = 0; y < numberOfTilesY_axis; y++) {
+                    if (checks.checkIfTileHasPieceOnIt(x, y)) {
+                        //colorTile(x,y,"blue");
+                        //instead of coloring tiles push available tiles to an array, then randomly choose a tile to add a piece to.
+                        tempOpenTiles.push(new Tile(x, y));
+                    }
+                }
             }
-            break;
-        case "ArrowDown":
-            if (player.Y >= numberOfTilesY_axis - 1) {
-                alert("out of bounds");
-            } else {
-                player.pixelY = tileToPixelCenter[player.Y];
-                player.Y += 1;
-                movePlayerThenMoveEnemy();
+            return tempOpenTiles;
+        }
+
+        function colorTile(x, y, color) {
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "yellow";
+            ctx.fillStyle = color;
+            ctx.rect(tileToPixelCenter[x] - centerOfTileToSideOfTile, tileToPixelCenter[y] - centerOfTileToTopOfTile, centerOfTileToSideOfTile * 2, centerOfTileToTopOfTile * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        var checks = {
+
+            checkIfPlayerTriesToMoveOntoEnemy: function() {
+                for (var i = 0; i < enemyArr.length; i++) {
+                    if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
+                        alert("you moved onto an enemy. You lose all " + points + " points!");
+                        points = 0;
+                        domUpdaters.updatePoints();
+                    }
+                }
+            },
+
+            checkIfPlayerTriesToMoveOntoGold: function() {
+                for (var i = 0; i < goldArr.length; i++) {
+                    if (player.X === goldArr[i].X && player.Y === goldArr[i].Y) {
+                        gold += goldArr[i].amount;
+                        domUpdaters.updateGold();
+                        removeGoldFromArray(goldArr[i].ID)
+                    }
+                }
+            },
+
+            checkIfPlayerIsOutOfMoves: function() {
+                if (movesLeft < 0) {
+                    alert("You are out of moves! You lose! Final score: " + points);
+                    points = 0;
+                    domUpdaters.updatePoints();
+                }
+            },
+
+            checkForGoal: function() {
+                if (player.X == goalTile.X && player.Y == goalTile.Y) {
+                    movesLeft = maxMoves;
+                    points += PointsPerGoal;
+                    gold += 10;
+                    domUpdaters.updateGold();
+                    let myArray = findAllOpenTiles();
+                    let rand = myArray[Math.floor(Math.random() * myArray.length)];
+                    enemyArr.push(new Enemy(rand.X, rand.Y, enemyIDtracker));
+                    enemyIDtracker += 1;
+
+                    myArray = findAllOpenTiles();
+                    rand = myArray[Math.floor(Math.random() * myArray.length)];
+                    goldArr.push(new Gold(rand.X, rand.Y, enemyIDtracker));
+                    goldIDtracker += 1;
+
+                    if ((goalTile.X == numberOfTilesX_axis - 1) && (goalTile.Y == numberOfTilesY_axis - 1)) {
+                        goalTile.X = 0;
+                        goalTile.Y = 0;
+                    } else if ((goalTile.X == 0) && (goalTile.Y == 0)) {
+                        goalTile.X = numberOfTilesX_axis - 1;
+                        goalTile.Y = numberOfTilesY_axis - 1;
+                    }
+                    domUpdaters.updatePoints();
+                }
+            },
+
+            checkIfTileHasPieceOnIt: function(x, y) {
+                //break this into smaller functions Check if tile has enemy on it. check if tile has player one it. check if tile has gold on it etc.
+                for (var i = 0; i < enemyArr.length; i++) {
+                    if (enemyArr[i].X === x && enemyArr[i].Y === y) {
+                        return false
+                    }
+                }
+
+                for (var i = 0; i < goldArr.length; i++) {
+                    if (goldArr[i].X === x && goldArr[i].Y === y) {
+                        return false
+                    }
+                }
+
+                //just do a for loop through all game pieces
+                if (player.X === x && player.Y === y) {
+                    return false
+                }
+                if (numberOfTilesX_axis - 1 === x && numberOfTilesY_axis - 1 === y) {
+                    return false
+                }
+                if (0 === x && 0 === y) {
+                    return false
+                }
+                //also check if it is other goalTile (make BOTH goal tiles off limit)
+                else {
+                    return true;
+                }
+            },
+
+        };
+
+        function removeGoldFromArray(id) {
+            var index = goldArr.map(function(g) {
+                return g.ID;
+            }).indexOf(id);
+            if (index > -1) {
+                goldArr.splice(index, 1);
             }
-            break;
-    }
-});
+        }
 
-//todo: prototype chain piece -> player/enemy/goal? player and enemy inherit prototype for radius property and drawing player and enemy
+        function reDrawCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            //draw board
+            drawTileGrid();
+            drawGoalTile(goalTile.X, goalTile.Y);
+            //draw gold
+            goldArr.forEach(function(element) {
+                element.drawGold();
+            });
+            // for (var i = 0; i < goldArr.length; i++) {
+            //     goldArr[i].drawGold(goldArr[i].X, goldArr[i].Y);
+            // }
+            //draw pieces: player and enemys
+            drawPlayer(player.pixelX, player.pixelY);
 
-//todo: create a tile object for putting int open tiles array and for methods for coloring or methods like checking if a tile is open.
+            // for(var i = 0; i < enemyArr.length; i++)
+            // {
+            //   enemyArr[i].moveEnemy();
+            // }
+            for (var i = 0; i < enemyArr.length; i++) {
+                enemyArr[i].drawEnemy(enemyArr[i].pixelX, enemyArr[i].pixelY);
+            }
 
-//todo: use functional programming like filter instead of looping through arrays
+        }
 
-//todo: remove "check" functions from reDraw canvas funciton
+        function animatePlayer() {
+            if (tileToPixelCenter[player.X] < player.pixelX) {
+                player.pixelX -= 5;
+                reDrawCanvas();
+            }
+            if (tileToPixelCenter[player.X] > player.pixelX) {
+                player.pixelX += 5;
+                reDrawCanvas();
+            }
+            if (tileToPixelCenter[player.Y] < player.pixelY) {
+                player.pixelY -= 5;
+                reDrawCanvas();
+            }
+            if (tileToPixelCenter[player.Y] > player.pixelY) {
+                player.pixelY += 5;
+                reDrawCanvas();
+            }
 
-//todo: bind checkIfPlayerTries and removeGold removeEnemy functions as one
+            if (tileToPixelCenter[player.X] !== player.pixelX || tileToPixelCenter[player.Y] !== player.pixelY) {
+                requestAnimationFrame(animatePlayer);
+            }
+        }
 
-//todo: have move's left be determined by map size. (it's variable)
+        function animateEnemys(enemy) {
+            for (var i = 0; i < enemyArr.length; i++) {
+                if (tileToPixelCenter[enemyArr[i].X] < enemyArr[i].pixelX) {
+                    enemyArr[i].pixelX -= 5;
+                }
+                if (tileToPixelCenter[enemyArr[i].X] > enemyArr[i].pixelX) {
+                    enemyArr[i].pixelX += 5;
+                }
+                if (tileToPixelCenter[enemyArr[i].Y] < enemyArr[i].pixelY) {
+                    enemyArr[i].pixelY -= 5;
+                }
+                if (tileToPixelCenter[enemyArr[i].Y] > enemyArr[i].pixelY) {
+                    enemyArr[i].pixelY += 5;
+                }
+            }
 
-//todo: create Shop object with prices for all items
+            reDrawCanvas();
 
-//todo: create functions for updating <p> tags for easier maintainability
+            if (enemyArr.length > 0) //come up with a better check for when enemy finishes animations. Is this a problem with canvas sizes not divisible by 5?
+            {
+                if (tileToPixelCenter[enemyArr[0].X] !== enemyArr[0].pixelX || tileToPixelCenter[enemyArr[0].Y] !== enemyArr[0].pixelY) {
+                    requestAnimationFrame(animateEnemys);
+                }
+            }
+        }
 
-//todo: after you lose, there should be a “do you want to play again” button
+        function updateMovesAndCheckDestination() {
+            movesLeft -= 1;
+            checks.checkIfPlayerIsOutOfMoves();
+            checks.checkIfPlayerTriesToMoveOntoEnemy();
+            checks.checkForGoal();
+            checks.checkIfPlayerTriesToMoveOntoGold();
+            domUpdaters.updateMoves();
+        }
 
-//todo: high score list on the side, so participants can log in and keep their score
-</script>
+        function BuyExtraMoves() {
+            if (gold >= shopPrices.extraMoves) {
+                gold -= shopPrices.extraMoves;
+                domUpdaters.updateGold();
+                maxMoves += 2;
+                domUpdaters.updateMoves();
+            } else {
+                shopPrices.alertNotEnoughGold(shopPrices.extraMoves);
+            }
+        }
+
+        function BuyPointsPerGoal() {
+            if (gold >= shopPrices.extraPoints) {
+                gold -= shopPrices.extraPoints;
+                domUpdaters.updateGold();
+                PointsPerGoal += 1;
+                domUpdaters.updatePointsPerGoal();
+            } else {
+                shopPrices.alertNotEnoughGold(shopPrices.extraPoints);
+            }
+        }
+
+        function Bomb() {
+            var bombColor = "pink";
+            if (gold >= shopPrices.bomb) {
+                gold -= shopPrices.bomb;
+                domUpdaters.updateGold();
+                //Explode the bomb
+                enemyArr = enemyArr.filter(function(enemy) {
+                    return (Math.abs(player.X - enemy.X) > 1) || (Math.abs(player.Y - enemy.Y) > 1);
+                });
+                colorTile(player.X - 1, player.Y, bombColor);
+                colorTile(player.X + 1, player.Y, bombColor);
+                colorTile(player.X, player.Y - 1, bombColor);
+                colorTile(player.X, player.Y + 1, bombColor);
+
+                colorTile(player.X - 1, player.Y - 1, bombColor);
+                colorTile(player.X + 1, player.Y + 1, bombColor);
+                colorTile(player.X + 1, player.Y - 1, bombColor);
+                colorTile(player.X - 1, player.Y + 1, bombColor);
+            } else {
+                shopPrices.alertNotEnoughGold(shopPrices.bomb);
+            }
+        }
+
+        function movePlayerThenMoveEnemy() {
+            updateMovesAndCheckDestination();
+            animatePlayer();
+            for (var i = 0; i < enemyArr.length; i++) {
+                enemyArr[i].moveEnemy();
+            }
+            animateEnemys();
+        }
+
+        function initButtonText() {
+            domUpdaters.updateBombButton();
+            domUpdaters.updatePpgButton();
+            domUpdaters.updateExtraMovesButton();
+        }
+
+        initButtonText();
+        drawTileGrid();
+        drawGoalTile(goalTile.X, goalTile.Y);
+        drawPlayer(tileToPixelCenter[player.X], tileToPixelCenter[player.Y]);
+
+        document.addEventListener('keydown', function(event) {
+            const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
+            switch (key) {
+                case "ArrowLeft":
+                    if (player.X < 1) {
+                        alert("out of bounds");
+                    } else {
+                        player.pixelX = tileToPixelCenter[player.X];
+                        player.X -= 1;
+                        movePlayerThenMoveEnemy();
+                    }
+                    break;
+                case "ArrowUp":
+                    if (player.Y < 1) {
+                        alert("out of bounds");
+                    } else {
+                        player.pixelY = tileToPixelCenter[player.Y];
+                        player.Y -= 1;
+                        movePlayerThenMoveEnemy();
+                    }
+                    break;
+                case "ArrowRight":
+                    if (player.X >= numberOfTilesX_axis - 1) {
+                        alert("out of bounds");
+                    } else {
+                        player.pixelX = tileToPixelCenter[player.X];
+                        player.X += 1;
+                        movePlayerThenMoveEnemy();
+                    }
+                    break;
+                case "ArrowDown":
+                    if (player.Y >= numberOfTilesY_axis - 1) {
+                        alert("out of bounds");
+                    } else {
+                        player.pixelY = tileToPixelCenter[player.Y];
+                        player.Y += 1;
+                        movePlayerThenMoveEnemy();
+                    }
+                    break;
+            }
+        });
+
+        //todo: prototype chain piece -> player/enemy/goal? player and enemy inherit prototype for radius property and drawing player and enemy
+
+        //todo: create a tile object for putting int open tiles array and for methods for coloring or methods like checking if a tile is open.
+
+        //todo: use functional programming like filter instead of looping through arrays
+
+        //todo: remove "check" functions from reDraw canvas funciton
+
+        //todo: bind checkIfPlayerTries and removeGold removeEnemy functions as one
+
+        //todo: have move's left be determined by map size. (it's variable)
+
+        //todo: create Shop object with prices for all items
+
+        //todo: create functions for updating <p> tags for easier maintainability
+
+        //todo: after you lose, there should be a “do you want to play again” button
+
+        //todo: high score list on the side, so participants can log in and keep their score
+    </script>
 </body>
+
 </html>
