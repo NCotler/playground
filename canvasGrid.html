@@ -30,21 +30,6 @@
             animation-name: modalopen;
             animation-duration: 2s;
         }
-        
-        .closeBtn {
-            color: rgb(123, 123, 123);
-            float: right;
-            position:relative;
-            margin-top:-50px;
-            font-size: 50px;
-        }
-        
-        .closeBtn:hover,
-        .closeBtn:focus {
-            color: #000;
-            text-decoration: nono;
-            cursor: pointer;
-        }
 
         .modal-form {
             text-align: center;
@@ -89,11 +74,11 @@
 
     <div id="simpleModal" class="modal">
         <div class="modal-content">
-            <span class="closeBtn">&times;</span>
             <form action="http://noahcotler.com/InsertHighScore.php" method="GET" class="modal-form">
                 Name :
                 <input type="text" name="n" />
                 <input id="user-score" type="hidden" name="i" />
+                <input type="submit" value="Submit">
             </form>
         </div>
     </div>
@@ -101,10 +86,8 @@
     <script>
         var modal = document.getElementById("simpleModal");
         var modalBtn = document.getElementById("modalBtn");
-        var closeBtn = document.getElementsByClassName("closeBtn")[0];
 
         modalBtn.addEventListener("click", openModal);
-        closeBtn.addEventListener("click", closeModal);
         window.addEventListener("click", clickOutsideModal);
 
         function openModal() {
@@ -112,13 +95,9 @@
             modal.style.display = "block";
         }
 
-        function closeModal() {
-            modal.style.display = "none";
-        }
-
         function clickOutsideModal(e) {
             if (e.target == modal) {
-                modal.style.display = "none";
+                alert("Submit your name or refresh the browser.");
             }
         }
 
@@ -375,9 +354,11 @@
             checkIfPlayerTriesToMoveOntoEnemy: function() {
                 for (var i = 0; i < enemyArr.length; i++) {
                     if (player.X === enemyArr[i].X && player.Y === enemyArr[i].Y) {
-                        alert("you moved onto an enemy. You lose all " + points + " points!");
-                        points = 0;
-                        domUpdaters.updatePoints();
+                        // old code below
+                        // alert("you moved onto an enemy. You lose all " + points + " points!");
+                        // points = 0;
+                        // domUpdaters.updatePoints();
+                        modal.style.display = "block";
                     }
                 }
             },
@@ -394,9 +375,11 @@
 
             checkIfPlayerIsOutOfMoves: function() {
                 if (movesLeft < 0) {
-                    alert("You are out of moves! You lose! Final score: " + points);
-                    points = 0;
-                    domUpdaters.updatePoints();
+                    // old code is below
+                    // alert("You are out of moves! You lose! Final score: " + points);
+                    // points = 0;
+                    // domUpdaters.updatePoints();
+                    modal.style.display = "block";
                 }
             },
 
@@ -618,7 +601,9 @@
 
         document.addEventListener('keydown', function(event) {
             const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
-            switch (key) {
+            if(modal.style.display !== "block")
+            {
+                switch (key) {
                 case "ArrowLeft":
                     if (player.X < 1) {
                         alert("out of bounds");
@@ -656,6 +641,8 @@
                     }
                     break;
             }
+            }
+
         });
 
         //todo: prototype chain piece -> player/enemy/goal? player and enemy inherit prototype for radius property and drawing player and enemy
