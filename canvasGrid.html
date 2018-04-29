@@ -75,10 +75,9 @@
     <div id="simpleModal" class="modal">
         <div class="modal-content">
             <form action="http://noahcotler.com/InsertHighScore.php" method="GET" class="modal-form">
-                Name :
+                Input Name & Press Enter :
                 <input type="text" name="n" />
-                <input id="user-score" type="hidden" name="i" />
-                <input type="submit" value="Submit">
+                <input type="hidden" name="i" id="user-score" />
             </form>
         </div>
     </div>
@@ -358,7 +357,7 @@
                         // alert("you moved onto an enemy. You lose all " + points + " points!");
                         // points = 0;
                         // domUpdaters.updatePoints();
-                        modal.style.display = "block";
+                        openModal();
                     }
                 }
             },
@@ -379,7 +378,7 @@
                     // alert("You are out of moves! You lose! Final score: " + points);
                     // points = 0;
                     // domUpdaters.updatePoints();
-                    modal.style.display = "block";
+                    openModal();
                 }
             },
 
