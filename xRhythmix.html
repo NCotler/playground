@@ -1,0 +1,39 @@
+<html>
+	<head>
+		<style>
+			.blinker {
+				width: 100px;
+				height: 100px;
+				border: solid;
+				margin: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="blinker" id="One"></div>
+		<div class="blinker" id="Two"></div>
+		<div class="blinker" id="Three"></div>
+		<div class="blinker" id="Four"></div>
+		<script>
+
+			var One = document.getElementById("One");
+			var Two = document.getElementById("Two");
+
+			function changeColor(el, color1, color2) {
+				return function() {
+					if(el.style.background == color1) {
+						el.style.background = color2;
+					} else {
+						el.style.background = color1;
+					}
+				}
+			}
+
+			setInterval( changeColor(One, "blue", "red"), 1000);
+			setInterval( changeColor(Two, "green", "yellow"), 500);
+			setInterval( changeColor(Three, "blue", "red"), 333);
+			setInterval( changeColor(Four, "green", "yellow"), 250);
+
+		</script>
+	</body>
+</html>
