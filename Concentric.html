@@ -3,19 +3,15 @@
 	<title>Concentric</title>
 	<style type="text/css">
 
-	.Abraham {
-	}
-
 	.wrapper {
 		border-radius: 25px;
-		background:#9f9;
 		padding:1px;
 	}
 
 	</style>
 </header>
 <body>
-	<div class="Abraham"></div>
+	<div class="UNO"></div>
 
 	<script>
 
@@ -26,7 +22,7 @@
 	function addDiv()
 	{
 		IDcounter += 1;
-		wrap("<div class='wrapper' id=" + IDcounter + ">", ".Abraham", "</div>");
+		wrap("<div class='wrapper' id=" + IDcounter + ">", ".UNO", "</div>");
 		var newParent = document.getElementById(IDcounter);
 		newParent.style.background = "rgba(" + (IDcounter*22)%255 + "," + (IDcounter*30)%255 + "," + (IDcounter*14)%255 + ",0.5)";
 	}
