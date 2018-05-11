@@ -1,19 +1,38 @@
 <html>
 	<head>
 		<style>
-			.blinker {
-				width: 100px;
-				height: 100px;
-				border: solid;
-				margin: 10px;
+
+			* {
+				margin: 0;
+				padding: 0;
 			}
+
+			.blinker {
+				width: 50%;
+				height: 50%;
+
+				float: left;
+			}
+
+			.row1 {
+
+			}
+
+			.row2 {
+
+			}
+
 		</style>
 	</head>
 	<body>
-		<div class="blinker" id="One"></div>
-		<div class="blinker" id="Two"></div>
-		<div class="blinker" id="Three"></div>
-		<div class="blinker" id="Four"></div>
+		<div class="row1">
+			<div class="blinker" id="One"></div>
+			<div class="blinker" id="Two"></div>
+		</div>
+		<div class="row2">
+			<div class="blinker" id="Three"></div>
+			<div class="blinker" id="Four"></div>
+		</div>
 		<script>
 
 			var One = document.getElementById("One");
@@ -29,9 +48,9 @@
 				}
 			}
 
-			setInterval( changeColor(One, "blue", "red"), 1000);
-			setInterval( changeColor(Two, "green", "yellow"), 500);
-			setInterval( changeColor(Three, "blue", "red"), 333);
+			setInterval( changeColor(One, "blue", "red"), 2000);
+			setInterval( changeColor(Two, "green", "yellow"), 1000);
+			setInterval( changeColor(Three, "blue", "red"), 500);
 			setInterval( changeColor(Four, "green", "yellow"), 250);
 
 		</script>

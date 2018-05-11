@@ -5,7 +5,7 @@
 
 	.wrapper {
 		border-radius: 25px;
-		padding:1px;
+		padding:2px;
 	}
 
 	</style>
@@ -24,7 +24,7 @@
 		IDcounter += 1;
 		wrap("<div class='wrapper' id=" + IDcounter + ">", ".UNO", "</div>");
 		var newParent = document.getElementById(IDcounter);
-		newParent.style.background = "rgba(" + (IDcounter*22)%255 + "," + (IDcounter*30)%255 + "," + (IDcounter*14)%255 + ",0.5)";
+		newParent.style.background = "rgba(" + (IDcounter*3)%255 + "," + (IDcounter*5)%255 + "," + (IDcounter*8)%255 + ",0.5)";
 	}
 
 	function wrap(top, selector, bottom)
