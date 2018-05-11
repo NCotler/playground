@@ -8,28 +8,24 @@
 			}
 
 			.blinker {
-				width: 50%;
-				height: 50%;
-
+				width: calc(50% - 4px);
+				height: calc(50% - 4px);
+				border: 2px solid black;
 				float: left;
 			}
 
-			.row1 {
-
-			}
-
-			.row2 {
-
+			.row {
+				clear: left;
 			}
 
 		</style>
 	</head>
 	<body>
-		<div class="row1">
+		<div class="row">
 			<div class="blinker" id="One"></div>
 			<div class="blinker" id="Two"></div>
 		</div>
-		<div class="row2">
+		<div class="row">
 			<div class="blinker" id="Three"></div>
 			<div class="blinker" id="Four"></div>
 		</div>
